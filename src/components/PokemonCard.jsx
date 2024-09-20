@@ -131,12 +131,22 @@ const PokemonCard = ({
           className="absolute w-full h-full backface-hidden"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <div className={`absolute top-4 right-4 z-10 ${isFlipped ? 'hidden' : ''}`}>
+          <motion.div
+            className="absolute top-4 right-4 z-10"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: isFlipped ? 0 : 1 }}
+            transition={{ duration: 0.4 }}
+          >
             <span className="text-white font-bold text-lg opacity-80 bg-black bg-opacity-30 px-3 py-1 rounded-full">
               #{number.toString().padStart(3, "0")}
             </span>
-          </div>
-          <div className="flex flex-col h-full">
+          </motion.div>
+          <motion.div 
+            className="flex flex-col h-full"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: isFlipped ? 0 : 1 }}
+            transition={{ duration: 0.4 }}
+          >
             <motion.h2
               className="text-white text-3xl capitalize font-bold mb-2"
               whileHover={{ scale: 1.05, originX: 0 }}
@@ -173,7 +183,7 @@ const PokemonCard = ({
                 }}
               />
             </div>
-          </div>
+          </motion.div>
         </motion.div>
 
         <CardBack
