@@ -1,0 +1,350 @@
+import { motion } from "framer-motion";
+import PropTypes from "prop-types";
+import { useState, useRef, useEffect } from "react";
+import { Modal } from "antd";
+
+const CardBack = ({
+  //About
+  id,
+  description,
+  habitat,
+  shape,
+  eggGroups,
+  height,
+  weight,
+  captureRate,
+  location,
+  varieties,
+  isBaby,
+  isMythical,
+  isLegendary,
+
+  //Base Stats
+  hp,
+  attack,
+  defense,
+  specialAttack,
+  specialDefense,
+  speed,
+
+  //Evolution
+  evolutions,
+
+  //Moves
+  moves,
+}) => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [activeSection, setActiveSection] = useState("About");
+  const navRef = useRef(null);
+
+  const showModal = (e) => {
+    e.stopPropagation();
+    setIsModalVisible(true);
+  };
+
+  const handleOk = (e) => {
+    e.stopPropagation();
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = (e) => {
+    e.stopPropagation();
+    setIsModalVisible(false);
+  };
+
+  const truncateLocation = (loc) => {
+    if (loc.length > 20) {
+      return loc.substring(0, 20) + "...";
+    }
+    return loc;
+  };
+
+  const formatLocations = (locations) => {
+    return locations.split(',').map(location => location.trim()).join(', ');
+  };
+
+  const scrollToSection = (section) => {
+    const navElement = navRef.current;
+    const sectionElement = navElement.querySelector(`[data-section="${section}"]`);
+    if (sectionElement) {
+      const scrollLeft = sectionElement.offsetLeft - navElement.offsetLeft;
+      navElement.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    scrollToSection(activeSection);
+  }, [activeSection]);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case "About":
+        return (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants}>
+              <h3 className="text-2xl font-bold mb-2 bord">About</h3>
+              <p className="text-lg">{description}</p>
+            </motion.div>
+            <motion.div className="grid grid-cols-2 gap-4 mt-4" variants={containerVariants}>
+              {[
+                { label: "ID", value: id },
+                { label: "Habitat", value: habitat },
+                { label: "Shape", value: shape },
+                { label: "Egg Groups", value: eggGroups },
+                { label: "Height", value: `${height} m` },
+                { label: "Weight", value: `${weight} kg` },
+                { label: "Capture Rate", value: `${(captureRate / 255 * 100).toFixed(2)}%` },
+                { label: "Location", value: (
+                  location ? (
+                    <>
+                      {truncateLocation(location)}
+                      {location.length > 20 && (
+                        <span
+                          className="text-blue-400 cursor-pointer ml-2"
+                          onClick={showModal}
+                        >
+                          See more
+                        </span>
+                      )}
+                    </>
+                  ) : "N/A"
+                )},
+              ].map(({ label, value }) => (
+                <motion.div key={label} variants={itemVariants}>
+                  <h4 className="font-bold">{label}</h4>
+                  <p>{value}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+            <motion.div variants={itemVariants} className="mt-4">
+              <h4 className="font-bold">Varieties</h4>
+              <p>{varieties}</p>
+            </motion.div>
+            <motion.div className="grid grid-cols-3 gap-4 mt-4" variants={containerVariants}>
+              {[
+                { label: "Baby", value: isBaby },
+                { label: "Mythical", value: isMythical },
+                { label: "Legendary", value: isLegendary },
+              ].map(({ label, value }) => (
+                <motion.div key={label} variants={itemVariants}>
+                  <h4 className="font-bold">{label}</h4>
+                  <p>{value ? "Yes" : "No"}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        );
+      case "Base Stats":
+        return (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants}>
+              <h3 className="text-2xl font-bold mb-2">Base Stats</h3>
+              <div className="space-y-2">
+                {[ 
+                  { label: "HP", value: hp },
+                  { label: "Attack", value: attack },
+                  { label: "Defense", value: defense },
+                  { label: "Special Attack", value: specialAttack },
+                  { label: "Special Defense", value: specialDefense },
+                  { label: "Speed", value: speed },
+                ].map(({ label, value }) => (
+                  <motion.div key={label} variants={itemVariants} className="flex items-center">
+                    <h4 className="font-bold w-32">{label}</h4>
+                    <div className="flex-grow bg-gray-700 rounded-full h-2.5 mr-2">
+                      <motion.div 
+                        className="bg-blue-600 h-2.5 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(value / 255) * 100}%` }}
+                        transition={{ duration: 0.5 }}
+                      />
+                    </div>
+                    <p className="w-8 text-right">{value}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        );
+      case "Evolution":
+        return (
+          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="p-4">
+            <h3 className="text-2xl font-bold mb-6 text-center">Evolution Chain</h3>
+            <div className="flex flex-wrap justify-center items-center gap-8">
+              {evolutions.map((evolution, index) => (
+                <motion.div key={index} variants={itemVariants} className="flex flex-col items-center">
+                  <div className="bg-gray-800 rounded-full p-4 mb-4 shadow-lg">
+                    <img src={evolution.image} alt={evolution.species_name} className="w-24 h-24 object-contain" />
+                  </div>
+                  <h4 className="font-semibold text-lg">{evolution.species_name}</h4>
+                  {evolution.min_level && (
+                    <p className="text-sm text-gray-400 mt-1">Level {evolution.min_level}</p>
+                  )}
+                  {index < evolutions.length - 1 && (
+                    <div className="text-3xl text-gray-400 my-4">↓</div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        );
+      case "Moves":
+        return (
+          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="p-4">
+            <h3 className="text-2xl font-bold mb-4">Moves</h3>
+            <div className="flex flex-col space-y-4">
+              {moves.map((move, index) => (
+                <motion.div
+                  key={index}
+                  variants={itemVariants}
+                  className="bg-gray-800 rounded-lg p-4 shadow-lg"
+                >
+                  <h4 className="text-lg font-semibold mb-2">{move.name}</h4>
+                  <p className="text-sm text-gray-400">Level: {move.level_learned_at}</p>
+                  <p className="text-sm text-gray-400">Method: {move.learn_method}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <motion.div
+      className="absolute w-full h-full text-white rounded-3xl backface-hidden overflow-y-auto"
+      style={{
+        backfaceVisibility: "hidden",
+        transform: "rotateY(180deg)",
+        background:
+          "radial-gradient(circle, rgba(64,64,64,1) 0%, rgba(32,32,32,1) 100%)",
+        boxShadow: "inset 0 0 50px rgba(0,0,0,0.5)",
+        backdropFilter: "blur(5px)",
+      }}
+      initial={{ opacity: 0, rotateY: 180 }}
+      animate={{ opacity: 1, rotateY: 180 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="p-6 space-y-6">
+        <motion.div
+          ref={navRef}
+          className="flex pb-2 mb-4 overflow-x-auto scrollbar-none 2xl:justify-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
+          <div className="inline-flex">
+            {["About", "Base Stats", "Evolution", "Moves"].map((section) => (
+              <motion.button
+                key={section}
+                data-section={section}
+                className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out whitespace-nowrap ${
+                  activeSection === section
+                    ? "text-white border-b-2 border-white"
+                    : "text-gray-400 hover:text-white"
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveSection(section);
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {section}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+        <motion.div
+          key={activeSection}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          {renderSection()}
+        </motion.div>
+      </div>
+      <Modal
+        title="Location"
+        open={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <p style={{ whiteSpace: 'pre-wrap' }}>
+          {formatLocations(location).split(', ').join('\n')}
+        </p>
+      </Modal>
+    </motion.div>
+  );
+};
+
+CardBack.propTypes = {
+  //About
+  id: PropTypes.number.isRequired,
+  description: PropTypes.string.isRequired,
+  habitat: PropTypes.string.isRequired,
+  shape: PropTypes.string.isRequired,
+  eggGroups: PropTypes.string.isRequired,
+  height: PropTypes.number.isRequired,
+  weight: PropTypes.number.isRequired,
+  captureRate: PropTypes.number.isRequired,
+  location: PropTypes.string.isRequired,
+  varieties: PropTypes.string.isRequired,
+  isBaby: PropTypes.bool.isRequired,
+  isMythical: PropTypes.bool.isRequired,
+  isLegendary: PropTypes.bool.isRequired,
+
+  //Base Stats
+  hp: PropTypes.number.isRequired,
+  attack: PropTypes.number.isRequired,
+  defense: PropTypes.number.isRequired,
+  specialAttack: PropTypes.number.isRequired,
+  specialDefense: PropTypes.number.isRequired,
+  speed: PropTypes.number.isRequired,
+
+  //Evolution
+  evolutions: PropTypes.array.isRequired,
+  evolutionChain: PropTypes.array.isRequired,
+
+  //Moves
+  moves: PropTypes.array.isRequired,
+};
+
+export default CardBack;
