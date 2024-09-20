@@ -6,17 +6,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': '/src',
-      antd: "antd/es",
-    },
-  },
-  build: {
-    rollupOptions: {
-      external: ['antd'],
     },
   },
   optimizeDeps: {
     include: ['antd'],
   },
-
- 
 })
