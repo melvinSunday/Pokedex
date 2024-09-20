@@ -6,6 +6,9 @@ export const PokemonContext = createContext(null);
 const Context = ({ children }) => {
   const [pokemons, setPokemons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const pokemonsPerPage = 30;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -15,10 +18,12 @@ const Context = ({ children }) => {
       setIsLoading(true);
       try {
         const response = await fetch(
-         "https://pokeapi.co/api/v2/pokemon?limit=385",
+          `https://pokeapi.co/api/v2/pokemon?limit=${pokemonsPerPage}&offset=${(currentPage - 1) * pokemonsPerPage}`,
           { signal }
         );
         const data = await response.json();
+
+        setTotalPages(Math.ceil(data.count / pokemonsPerPage));
 
         const pokemonDetails = await Promise.all(
           data.results.map(async (pokemon) => {
@@ -150,10 +155,25 @@ const Context = ({ children }) => {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [currentPage]); // Add currentPage as a dependency
+
+  const goToNextPage = () => {
+    setCurrentPage(page => Math.min(page + 1, totalPages));
+  };
+
+  const goToPreviousPage = () => {
+    setCurrentPage(page => Math.max(page - 1, 1));
+  };
 
   return (
-    <PokemonContext.Provider value={{ pokemons, isLoading }}>
+    <PokemonContext.Provider value={{ 
+      pokemons, 
+      isLoading, 
+      currentPage, 
+      totalPages, 
+      goToNextPage, 
+      goToPreviousPage 
+    }}>
       {children}
     </PokemonContext.Provider>
   );
