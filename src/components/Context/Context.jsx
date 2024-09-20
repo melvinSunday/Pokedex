@@ -103,6 +103,7 @@ const Context = ({ children }) => {
               eggGroups: speciesData.egg_groups
                 .map((group) => group.name.charAt(0).toUpperCase() + group.name.slice(1))
                 .join(", "),
+                
               //About
               captureRate: speciesData.capture_rate,
               location: locations,
@@ -124,6 +125,10 @@ const Context = ({ children }) => {
 
               //Moves
               moves: moves,
+
+              // Mythical or Legendary status
+              isMythical: speciesData.is_mythical,
+              isLegendary: speciesData.is_legendary,
             };
           })
         );
