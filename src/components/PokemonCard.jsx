@@ -131,7 +131,7 @@ const PokemonCard = ({
           className="absolute w-full h-full backface-hidden"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <div className="absolute top-4 right-4 z-10">
+          <div className={`absolute top-4 right-4 z-10 ${isFlipped ? 'hidden' : ''}`}>
             <span className="text-white font-bold text-lg opacity-80 bg-black bg-opacity-30 px-3 py-1 rounded-full">
               #{number.toString().padStart(3, "0")}
             </span>
