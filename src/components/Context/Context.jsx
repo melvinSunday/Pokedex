@@ -15,7 +15,7 @@ const Context = ({ children }) => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          "https://pokeapi.co/api/v2/pokemon?limit=381",
+         "https://pokeapi.co/api/v2/pokemon?limit=385",
           { signal }
         );
         const data = await response.json();

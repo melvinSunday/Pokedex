@@ -106,20 +106,21 @@ const CardBack = ({
             variants={containerVariants}
             initial="hidden"
             animate="visible"
+            className=" backdrop-blur-md rounded-lg "
           >
             <motion.div variants={itemVariants}>
-              <h3 className="text-2xl font-bold mb-2 bord">About</h3>
-              <p className="text-lg">{description}</p>
+              <h3 className="text-2xl font-bold mb-2 text-blue-400">About</h3>
+              <p className="text-lg text-gray-200">{description}</p>
             </motion.div>
             <motion.div className="grid grid-cols-2 gap-4 mt-4" variants={containerVariants}>
               {[
-                { label: "ID", value: id },
-                { label: "Habitat", value: habitat },
-                { label: "Shape", value: shape },
-                { label: "Egg Groups", value: eggGroups },
-                { label: "Height", value: `${height} m` },
-                { label: "Weight", value: `${weight} kg` },
-                { label: "Capture Rate", value: `${(captureRate / 255 * 100).toFixed(2)}%` },
+                { label: "ID", value: id, color: "text-red-400" },
+                { label: "Habitat", value: habitat, color: "text-green-400" },
+                { label: "Shape", value: shape, color: "text-yellow-400" },
+                { label: "Egg Groups", value: eggGroups, color: "text-purple-400" },
+                { label: "Height", value: `${height} m`, color: "text-pink-400" },
+                { label: "Weight", value: `${weight} kg`, color: "text-indigo-400" },
+                { label: "Capture Rate", value: `${(captureRate / 255 * 100).toFixed(2)}%`, color: "text-teal-400" },
                 { label: "Location", value: (
                   location ? (
                     <>
@@ -134,27 +135,27 @@ const CardBack = ({
                       )}
                     </>
                   ) : "N/A"
-                )},
-              ].map(({ label, value }) => (
-                <motion.div key={label} variants={itemVariants}>
-                  <h4 className="font-bold">{label}</h4>
-                  <p>{value}</p>
+                ), color: "text-orange-400" },
+              ].map(({ label, value, color }) => (
+                <motion.div key={label} variants={itemVariants} className="bg-white bg-opacity-5 rounded-lg p-3">
+                  <h4 className={`font-bold ${color}`}>{label}</h4>
+                  <p className="text-gray-200">{value}</p>
                 </motion.div>
               ))}
             </motion.div>
-            <motion.div variants={itemVariants} className="mt-4">
-              <h4 className="font-bold">Varieties</h4>
-              <p>{varieties}</p>
+            <motion.div variants={itemVariants} className="mt-4 bg-white bg-opacity-5 rounded-lg p-3">
+              <h4 className="font-bold text-cyan-400">Varieties</h4>
+              <p className="text-gray-200">{varieties}</p>
             </motion.div>
             <motion.div className="grid grid-cols-3 gap-4 mt-4" variants={containerVariants}>
               {[
-                { label: "Baby", value: isBaby },
-                { label: "Mythical", value: isMythical },
-                { label: "Legendary", value: isLegendary },
-              ].map(({ label, value }) => (
-                <motion.div key={label} variants={itemVariants}>
-                  <h4 className="font-bold">{label}</h4>
-                  <p>{value ? "Yes" : "No"}</p>
+                { label: "Baby", value: isBaby, color: "text-pink-400" },
+                { label: "Mythical", value: isMythical, color: "text-purple-400" },
+                { label: "Legendary", value: isLegendary, color: "text-yellow-400" },
+              ].map(({ label, value, color }) => (
+                <motion.div key={label} variants={itemVariants} className="bg-white bg-opacity-5 rounded-lg p-3">
+                  <h4 className={`font-bold ${color}`}>{label}</h4>
+                  <p className="text-gray-200">{value ? "Yes" : "No"}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -256,7 +257,7 @@ const CardBack = ({
       animate={{ opacity: 1, rotateY: 180 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-6">
         <motion.div
           ref={navRef}
           className="flex pb-2 mb-4 overflow-x-auto scrollbar-none 2xl:justify-center"
