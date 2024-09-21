@@ -6,8 +6,8 @@ export const PokemonContext = createContext(null);
 const Context = ({ children }) => {
   const [pokemons, setPokemons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const totalPokemons = 1020; // Total number of Pokémon
-  const batchSize = 100; // Fetch 100 Pokémon at a time
+  const totalPokemons = 1020; 
+  const batchSize = 100; 
 
   useEffect(() => {
     const controller = new AbortController();
@@ -165,11 +165,12 @@ const Context = ({ children }) => {
           );
 
           // Filter out any null entries (failed Pokémon) and append to allPokemons array
-          allPokemons = [...allPokemons, ...pokemonDetails.filter(pokemon => pokemon !== null)];
+          const newPokemons = pokemonDetails.filter(pokemon => pokemon !== null);
+          allPokemons = [...allPokemons, ...newPokemons];
+          setPokemons(allPokemons);
         }
 
         if (!signal.aborted) {
-          setPokemons(allPokemons);
           setIsLoading(false);
         }
       } catch (error) {
