@@ -1,22 +1,21 @@
-import { useState, useContext, useRef, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useContext, useRef, useEffect, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import { PokemonContext } from "./Context/Context";
 import PokemonCard from "./PokemonCard";
 import LoadingSkeleton from "./LoadingSkeleton";
-import { debounce } from 'lodash';  
+import { debounce } from 'lodash';
 
 const Pokemons = ({ searchTerm }) => {
   const { pokemons, isLoading } = useContext(PokemonContext);
-  const [visiblePokemons, setVisiblePokemons] = useState([]);
+  const [visiblePokemons, setVisiblePokemons] = useState(new Set());
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const observerRef = useRef();
   const pokemonRefs = useRef({});
 
-  // Debounce the search term update
   useEffect(() => {
     const debouncedSearch = debounce((term) => {
       setDebouncedSearchTerm(term);
-    }, 300);  // Adjust the delay as needed
+    }, 300);  
 
     debouncedSearch(searchTerm);
 
@@ -39,14 +38,23 @@ const Pokemons = ({ searchTerm }) => {
   const handleIntersection = useCallback((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        const pokemonId = entry.target.dataset.id;
-        setVisiblePokemons((prev) => [...new Set([...prev, pokemonId])]);
+        setVisiblePokemons((prev) => new Set(prev).add(entry.target.dataset.id));
+      } else {
+        setVisiblePokemons((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(entry.target.dataset.id);
+          return newSet;
+        });
       }
     });
   }, []);
 
   useEffect(() => {
-    observerRef.current = new IntersectionObserver(handleIntersection, { rootMargin: "100px" });
+    observerRef.current = new IntersectionObserver(handleIntersection, {
+      root: null,
+      rootMargin: "200px 0px",
+      threshold: 0.1
+    });
 
     return () => {
       if (observerRef.current) {
@@ -87,7 +95,7 @@ const Pokemons = ({ searchTerm }) => {
           ref={(el) => (pokemonRefs.current[pokemon.id] = el)}
           data-id={pokemon.id}
         >
-          {(visiblePokemons.includes(pokemon.id.toString()) || debouncedSearchTerm) ? (
+          {visiblePokemons.has(pokemon.id.toString()) || debouncedSearchTerm ? (
             <PokemonCard
               id={pokemon.id}
               name={pokemon.name}
@@ -122,7 +130,7 @@ const Pokemons = ({ searchTerm }) => {
               moves={pokemon.moves}
             />
           ) : (
-            <LoadingSkeleton />
+            <div style={{ height: "400px" }} /> // Placeholder to maintain grid structure
           )}
         </div>
       ))}
