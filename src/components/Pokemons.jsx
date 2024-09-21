@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { PokemonContext } from "./Context/Context";
 import PokemonCard from "./PokemonCard";
 import LoadingSkeleton from "./LoadingSkeleton";
-import { debounce } from 'lodash';  // Make sure to install lodash if not already installed
+import { debounce } from 'lodash';  
 
 const Pokemons = ({ searchTerm }) => {
   const { pokemons, isLoading } = useContext(PokemonContext);

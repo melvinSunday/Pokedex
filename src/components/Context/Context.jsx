@@ -23,6 +23,11 @@ const Context = ({ children }) => {
             `https://pokeapi.co/api/v2/pokemon?limit=${batchSize}&offset=${offset}`,
             { signal }
           );
+          if (!response.ok) {
+            console.error(`Failed to fetch Pokémon list: ${response.status} ${response.statusText}`);
+            continue;
+          }
+
           const data = await response.json();
 
           const pokemonDetails = await Promise.all(
@@ -48,7 +53,12 @@ const Context = ({ children }) => {
                 const officialArtwork = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonData.id}.png`;
 
                 const locationAreasRes = await fetch(pokemonData.location_area_encounters, { signal });
+                if (!locationAreasRes.ok) {
+                  console.warn(`Failed to fetch location areas for ${pokemon.name}`);
+                  return null;
+                }
                 const locationAreasData = await locationAreasRes.json();
+
                 const locations = locationAreasData
                   .map((area) =>
                     area.location_area.name
@@ -74,6 +84,10 @@ const Context = ({ children }) => {
                 }, {});
 
                 const evolutionChainRes = await fetch(speciesData.evolution_chain.url, { signal });
+                if (!evolutionChainRes.ok) {
+                  console.warn(`Failed to fetch evolution chain for ${pokemon.name}`);
+                  return null;
+                }
                 const evolutionChainData = await evolutionChainRes.json();
 
                 const getEvolutionDetails = async (evolutionData) => {
@@ -83,6 +97,10 @@ const Context = ({ children }) => {
                   do {
                     const evolutionDetails = evoData.evolution_details[0];
                     const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${evoData.species.name}`, { signal });
+                    if (!speciesRes.ok) {
+                      console.warn(`Failed to fetch ${evoData.species.name}`);
+                      return evolutions;
+                    }
                     const speciesData = await speciesRes.json();
                     const evolutionImage = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${speciesData.id}.png`;
 
