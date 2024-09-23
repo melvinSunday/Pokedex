@@ -230,16 +230,20 @@ const Context = ({ children }) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=10000`);
+      // fetch all Pokémon names and URLs
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=1025`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
 
+      // filter Pokémon based on search term
       const filteredPokemons = data.results.filter(pokemon =>
-        pokemon.name.toLowerCase().includes(searchTerm.toLowerCase()) || pokemon.url.split('/').slice(-2, -1)[0] === searchTerm
+        pokemon.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        pokemon.url.split('/').slice(-2, -1)[0] === searchTerm
       );
 
+      // fetch details for filtered Pokémon in parallel
       const pokemonDetails = await Promise.all(
         filteredPokemons.map(async (pokemon) => {
           return await fetchPokemonDetails(pokemon.url);
