@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 import PropTypes from 'prop-types';
 import debounce from 'lodash/debounce';
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +19,11 @@ const SearchBar = ({ onSearch }) => {
     const value = e.target.value;
     setSearchTerm(value);
     debouncedSearch(value);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    onSearch("");
   };
 
   useEffect(() => {
@@ -47,9 +52,15 @@ const SearchBar = ({ onSearch }) => {
                 value={searchTerm}
                 onChange={handleInputChange}
                 placeholder="Search Pokémon"
-                className="w-full pl-10 pr-4 py-2 rounded-full bg-opacity-20 bg-white backdrop-filter backdrop-blur-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300 ease-in-out"
+                className="w-full pl-10 pr-10 py-2 rounded-full bg-opacity-20 bg-white backdrop-filter backdrop-blur-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300 ease-in-out"
               />
               <IoSearchOutline className="absolute left-3 text-gray-300 text-xl" />
+              {searchTerm && (
+                <IoCloseOutline
+                  className="absolute right-3 text-gray-300 text-xl cursor-pointer"
+                  onClick={handleClearSearch}
+                />
+              )}
             </div>
           </div>
         </motion.div>
@@ -62,9 +73,15 @@ const SearchBar = ({ onSearch }) => {
                 value={searchTerm}
                 onChange={handleInputChange}
                 placeholder="Search Pokémon"
-                className="w-full pl-10 pr-4 py-2 rounded-full bg-opacity-20 bg-white backdrop-filter backdrop-blur-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300 ease-in-out"
+                className="w-full pl-10 pr-10 py-2 rounded-full bg-opacity-20 bg-white backdrop-filter backdrop-blur-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300 ease-in-out"
               />
               <IoSearchOutline className="absolute left-3 text-gray-300 text-xl" />
+              {searchTerm && (
+                <IoCloseOutline
+                  className="absolute right-3 text-gray-300 text-xl cursor-pointer"
+                  onClick={handleClearSearch}
+                />
+              )}
             </div>
           </div>
         </div>

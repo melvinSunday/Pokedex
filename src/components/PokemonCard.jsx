@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import CardBack from "./CardBack";
 
@@ -37,6 +37,8 @@ const PokemonCard = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const touchStartRef = useRef(null);
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
   const typeColors = {
     normal: "from-gray-300/80 to-gray-400/80",
@@ -67,12 +69,47 @@ const PokemonCard = ({
     setIsFlipped((prev) => !prev);
   };
 
+  const handleTouchStart = (e) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartRef.current) {
+      const touchEnd = {
+        x: e.changedTouches[0].clientX,
+        y: e.changedTouches[0].clientY,
+      };
+      const diffX = Math.abs(touchEnd.x - touchStartRef.current.x);
+      const diffY = Math.abs(touchEnd.y - touchStartRef.current.y);
+      
+      if (diffX < 5 && diffY < 5) {
+        handleFlip();
+      }
+      
+      touchStartRef.current = null;
+    }
+  };
+
+  const handleInteraction = (e) => {
+    if (isTouchDevice) {
+      // For touch devices, do nothing here as we handle touch separately
+      return;
+    }
+    // For non-touch devices, flip the card on click
+    handleFlip();
+  };
+
   return (
     <motion.div
       className={`relative perspective-1000 bg-gradient-to-br cursor-pointer ${
         typeColors[types[0].toLowerCase()] || "from-gray-700/80 to-gray-800/80"
       } rounded-3xl p-6 shadow-lg transition-all duration-300 overflow-hidden h-[400px]`}
-      onClick={handleFlip}
+      onClick={handleInteraction}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Background design */}
       <div className="absolute inset-0 opacity-30">

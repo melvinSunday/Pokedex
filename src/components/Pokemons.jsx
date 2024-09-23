@@ -6,7 +6,7 @@ import LoadingSkeleton from "./LoadingSkeleton";
 import { debounce } from 'lodash';
 
 const Pokemons = ({ searchTerm }) => {
-  const { pokemons, isLoading, loadMorePokemons } = useContext(PokemonContext);
+  const { pokemons, isLoading, loadMorePokemons, searchPokemons, searchResults, hasMorePokemons } = useContext(PokemonContext);
   const [visiblePokemons, setVisiblePokemons] = useState(new Set());
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const observerRef = useRef();
@@ -16,6 +16,7 @@ const Pokemons = ({ searchTerm }) => {
   useEffect(() => {
     const debouncedSearch = debounce((term) => {
       setDebouncedSearchTerm(term);
+      searchPokemons(term);
     }, 300);  
 
     debouncedSearch(searchTerm);
@@ -23,18 +24,11 @@ const Pokemons = ({ searchTerm }) => {
     return () => {
       debouncedSearch.cancel();
     };
-  }, [searchTerm]);
+  }, [searchTerm, searchPokemons]);
 
-  const filteredPokemons = useMemo(() => {
-    if (!debouncedSearchTerm) return pokemons;
-    
-    const lowercasedTerm = debouncedSearchTerm.toLowerCase();
-    return pokemons.filter(
-      (pokemon) =>
-        pokemon.name.toLowerCase().includes(lowercasedTerm) ||
-        pokemon.id.toString().includes(lowercasedTerm)
-    );
-  }, [pokemons, debouncedSearchTerm]);
+  const displayedPokemons = useMemo(() => {
+    return debouncedSearchTerm ? (searchResults.length > 0 ? searchResults : []) : pokemons;
+  }, [debouncedSearchTerm, searchResults, pokemons]);
 
   const handleIntersection = useCallback((entries) => {
     entries.forEach((entry) => {
@@ -76,12 +70,12 @@ const Pokemons = ({ searchTerm }) => {
         observerRef.current.disconnect();
       }
     };
-  }, [filteredPokemons]);
+  }, [displayedPokemons]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading && !debouncedSearchTerm) {
+        if (entries[0].isIntersecting && !isLoading && !debouncedSearchTerm && hasMorePokemons) {
           loadMorePokemons();
         }
       },
@@ -97,7 +91,7 @@ const Pokemons = ({ searchTerm }) => {
         observer.unobserve(loadMoreRef.current);
       }
     };
-  }, [loadMorePokemons, isLoading, debouncedSearchTerm]);
+  }, [loadMorePokemons, isLoading, debouncedSearchTerm, hasMorePokemons]);
 
   if (isLoading && pokemons.length === 0) {
     return (
@@ -109,9 +103,20 @@ const Pokemons = ({ searchTerm }) => {
     );
   }
 
+  if (debouncedSearchTerm && displayedPokemons.length === 0) {
+    return (
+      <div className="mt-8 text-center text-xl font-semibold text-gray-700">
+        No Pokémon found matching &quot;{debouncedSearchTerm}&quot;.
+      </div>
+    );
+  }
+
   return (
     <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredPokemons.map((pokemon, index) => {
+      {displayedPokemons.map((pokemon, index) => {
+        if (!pokemon || !pokemon.id) {
+          return null; // Skip rendering if pokemon or pokemon.id is undefined
+        }
         const uniqueKey = `${pokemon.id}-${index}`;
         return (
           <div
@@ -126,7 +131,7 @@ const Pokemons = ({ searchTerm }) => {
                 number={pokemon.id}
                 image={pokemon.image}
                 fallbackImage={pokemon.fallbackImage}
-                types={pokemon.types.map((type) => type.type.name)}
+                types={pokemon.types?.map((type) => type.type.name) || []}
                 description={pokemon.description}
                 habitat={pokemon.habitat}
                 shape={pokemon.shape}
@@ -154,17 +159,22 @@ const Pokemons = ({ searchTerm }) => {
                 moves={pokemon.moves}
               />
             ) : (
-              <div style={{ height: "400px" }} /> // Placeholder to maintain grid structure
+              <LoadingSkeleton /> // Replace the placeholder div with LoadingSkeleton
             )}
           </div>
         );
       })}
-      {!debouncedSearchTerm && <div ref={loadMoreRef} style={{ height: "20px" }} />}
-      {isLoading && pokemons.length > 0 && (
-        <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {!debouncedSearchTerm && hasMorePokemons && <div ref={loadMoreRef} style={{ height: "20px" }} />}
+      {isLoading && displayedPokemons.length > 0 && (
+        <>
           {Array.from({ length: 3 }).map((_, index) => (
-            <LoadingSkeleton key={`loading-skeleton-${index}`} />
+            <LoadingSkeleton key={`bottom-skeleton-${index}`} />
           ))}
+        </>
+      )}
+      {!hasMorePokemons && !debouncedSearchTerm && (
+        <div className="col-span-full text-center text-xl font-semibold text-gray-700 mt-8">
+          You&apos;ve reached the end of the Pokédex!
         </div>
       )}
     </div>
