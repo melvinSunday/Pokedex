@@ -60,15 +60,20 @@ const CardBack = ({
   };
 
   const formatLocations = (locations) => {
-    return locations.split(',').map(location => location.trim()).join(', ');
+    return locations
+      .split(",")
+      .map((location) => location.trim())
+      .join(", ");
   };
 
   const scrollToSection = (section) => {
     const navElement = navRef.current;
-    const sectionElement = navElement.querySelector(`[data-section="${section}"]`);
+    const sectionElement = navElement.querySelector(
+      `[data-section="${section}"]`
+    );
     if (sectionElement) {
       const scrollLeft = sectionElement.offsetLeft - navElement.offsetLeft;
-      navElement.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+      navElement.scrollTo({ left: scrollLeft, behavior: "smooth" });
     }
   };
 
@@ -112,17 +117,37 @@ const CardBack = ({
               <h3 className="text-2xl font-bold mb-2 text-blue-400">About</h3>
               <p className="text-lg text-gray-200">{description}</p>
             </motion.div>
-            <motion.div className="grid grid-cols-2 gap-4 mt-4" variants={containerVariants}>
+            <motion.div
+              className="grid grid-cols-2 gap-4 mt-4"
+              variants={containerVariants}
+            >
               {[
                 { label: "ID", value: id, color: "text-red-400" },
                 { label: "Habitat", value: habitat, color: "text-green-400" },
                 { label: "Shape", value: shape, color: "text-yellow-400" },
-                { label: "Egg Groups", value: eggGroups, color: "text-purple-400" },
-                { label: "Height", value: `${height} m`, color: "text-pink-400" },
-                { label: "Weight", value: `${weight} kg`, color: "text-indigo-400" },
-                { label: "Capture Rate", value: `${(captureRate / 255 * 100).toFixed(2)}%`, color: "text-teal-400" },
-                { label: "Location", value: (
-                  location ? (
+                {
+                  label: "Egg Groups",
+                  value: eggGroups,
+                  color: "text-purple-400",
+                },
+                {
+                  label: "Height",
+                  value: `${height} m`,
+                  color: "text-pink-400",
+                },
+                {
+                  label: "Weight",
+                  value: `${weight} kg`,
+                  color: "text-indigo-400",
+                },
+                {
+                  label: "Capture Rate",
+                  value: `${((captureRate / 255) * 100).toFixed(2)}%`,
+                  color: "text-teal-400",
+                },
+                {
+                  label: "Location",
+                  value: location ? (
                     <>
                       {truncateLocation(location)}
                       {location.length > 20 && (
@@ -134,26 +159,54 @@ const CardBack = ({
                         </span>
                       )}
                     </>
-                  ) : "N/A"
-                ), color: "text-orange-400" },
+                  ) : (
+                    "N/A"
+                  ),
+                  color: "text-orange-400",
+                },
               ].map(({ label, value, color }) => (
-                <motion.div key={label} variants={itemVariants} className="bg-white bg-opacity-5 rounded-lg p-3">
+                <motion.div
+                  key={label}
+                  variants={itemVariants}
+                  className="bg-white bg-opacity-5 rounded-lg p-3"
+                >
                   <h4 className={`font-bold ${color}`}>{label}</h4>
                   <p className="text-gray-200">{value}</p>
                 </motion.div>
               ))}
             </motion.div>
-            <motion.div variants={itemVariants} className="mt-4 bg-white bg-opacity-5 rounded-lg p-3">
+            <motion.div
+              variants={itemVariants}
+              className="mt-4 bg-white bg-opacity-5 rounded-lg p-3"
+            >
               <h4 className="font-bold text-cyan-400">Varieties</h4>
               <p className="text-gray-200">{varieties}</p>
             </motion.div>
-            <motion.div className="grid grid-cols-3 gap-4 mt-4" variants={containerVariants}>
+            <motion.div
+              className="grid grid-cols-3 gap-4 mt-4"
+              variants={containerVariants}
+            >
               {[
-                { label: "Baby", value: isBaby, color: "text-pink-400" },
-                { label: "Mythical", value: isMythical, color: "text-purple-400" },
-                { label: "Legendary", value: isLegendary, color: "text-yellow-400" },
+                { label: "Baby", 
+                  value: isBaby, 
+                  color: "text-pink-400"
+                },
+                {
+                  label: "Mythical",
+                  value: isMythical,
+                  color: "text-purple-400",
+                },
+                {
+                  label: "Legendary",
+                  value: isLegendary,
+                  color: "text-yellow-400",
+                },
               ].map(({ label, value, color }) => (
-                <motion.div key={label} variants={itemVariants} className="bg-white bg-opacity-5 rounded-lg p-3">
+                <motion.div
+                  key={label}
+                  variants={itemVariants}
+                  className="bg-white bg-opacity-5 rounded-lg p-3"
+                >
                   <h4 className={`font-bold ${color}`}>{label}</h4>
                   <p className="text-gray-200">{value ? "Yes" : "No"}</p>
                 </motion.div>
@@ -171,7 +224,7 @@ const CardBack = ({
             <motion.div variants={itemVariants}>
               <h3 className="text-2xl font-bold mb-2">Base Stats</h3>
               <div className="space-y-2">
-                {[ 
+                {[
                   { label: "HP", value: hp },
                   { label: "Attack", value: attack },
                   { label: "Defense", value: defense },
@@ -179,10 +232,14 @@ const CardBack = ({
                   { label: "Special Defense", value: specialDefense },
                   { label: "Speed", value: speed },
                 ].map(({ label, value }) => (
-                  <motion.div key={label} variants={itemVariants} className="flex items-center">
+                  <motion.div
+                    key={label}
+                    variants={itemVariants}
+                    className="flex items-center"
+                  >
                     <h4 className="font-bold w-32">{label}</h4>
                     <div className="flex-grow bg-gray-700 rounded-full h-2.5 mr-2">
-                      <motion.div 
+                      <motion.div
                         className="bg-blue-600 h-2.5 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${(value / 255) * 100}%` }}
@@ -198,17 +255,36 @@ const CardBack = ({
         );
       case "Evolution":
         return (
-          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="p-4">
-            <h3 className="text-2xl font-bold mb-6 text-center">Evolution Chain</h3>
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="p-4"
+          >
+            <h3 className="text-2xl font-bold mb-6 text-center">
+              Evolution Chain
+            </h3>
             <div className="flex flex-wrap justify-center items-center gap-8">
               {evolutions.map((evolution, index) => (
-                <motion.div key={index} variants={itemVariants} className="flex flex-col items-center">
+                <motion.div
+                  key={index}
+                  variants={itemVariants}
+                  className="flex flex-col items-center"
+                >
                   <div className="bg-gray-800 rounded-full p-4 mb-4 shadow-lg">
-                    <img src={evolution.image} alt={evolution.species_name} className="w-24 h-24 object-contain" />
+                    <img
+                      src={evolution.image}
+                      alt={evolution.species_name}
+                      className="w-24 h-24 object-contain"
+                    />
                   </div>
-                  <h4 className="font-semibold text-lg">{evolution.species_name}</h4>
+                  <h4 className="font-semibold text-lg">
+                    {evolution.species_name}
+                  </h4>
                   {evolution.min_level && (
-                    <p className="text-sm text-gray-400 mt-1">Level {evolution.min_level}</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Level {evolution.min_level}
+                    </p>
                   )}
                   {index < evolutions.length - 1 && (
                     <div className="text-3xl text-gray-400 my-4">↓</div>
@@ -220,7 +296,12 @@ const CardBack = ({
         );
       case "Moves":
         return (
-          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="p-4">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="p-4"
+          >
             <h3 className="text-2xl font-bold mb-4">Moves</h3>
             <div className="flex flex-col space-y-4">
               {moves.map((move, index) => (
@@ -230,8 +311,12 @@ const CardBack = ({
                   className="bg-gray-800 rounded-lg p-4 shadow-lg"
                 >
                   <h4 className="text-lg font-semibold mb-2">{move.name}</h4>
-                  <p className="text-sm text-gray-400">Level: {move.level_learned_at}</p>
-                  <p className="text-sm text-gray-400">Method: {move.learn_method}</p>
+                  <p className="text-sm text-gray-400">
+                    Level: {move.level_learned_at}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Method: {move.learn_method}
+                  </p>
                 </motion.div>
               ))}
             </div>
@@ -241,6 +326,9 @@ const CardBack = ({
         return null;
     }
   };
+
+  //sectionssssssss
+  const sections = ["About", "Base Stats", "Evolution", "Moves"];
 
   return (
     <motion.div
@@ -265,12 +353,12 @@ const CardBack = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
           }}
         >
           <div className="inline-flex">
-            {["About", "Base Stats", "Evolution", "Moves"].map((section) => (
+            {sections.map((section) => (
               <motion.button
                 key={section}
                 data-section={section}
@@ -308,8 +396,8 @@ const CardBack = ({
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <p style={{ whiteSpace: 'pre-wrap' }}>
-          {formatLocations(location).split(', ').join('\n')}
+        <p style={{ whiteSpace: "pre-wrap" }}>
+          {formatLocations(location).split(", ").join("\n")}
         </p>
       </Modal>
     </motion.div>

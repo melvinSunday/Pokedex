@@ -137,9 +137,9 @@ const PokemonCard = ({
             animate={{ opacity: isFlipped ? 0 : 1 }}
             transition={{ duration: 0.4 }}
           >
-            <span className="text-white font-bold text-lg opacity-80 bg-black bg-opacity-30 px-3 py-1 rounded-full">
+           {isFlipped ? null : <span className="text-white font-bold text-lg opacity-80 bg-black bg-opacity-30 px-3 py-1 rounded-full">
               #{number.toString().padStart(3, "0")}
-            </span>
+            </span>}
           </motion.div>
           <motion.div 
             className="flex flex-col h-full"
