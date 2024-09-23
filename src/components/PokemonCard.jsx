@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import CardBack from "./CardBack";
 
@@ -37,8 +37,6 @@ const PokemonCard = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const touchStartRef = useRef(null);
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
   const typeColors = {
     normal: "from-gray-300/80 to-gray-400/80",
@@ -65,40 +63,16 @@ const PokemonCard = ({
     setImageError(true);
   };
 
-  const handleInteractionStart = (e) => {
-    if (isTouchDevice) {
-      touchStartRef.current = e.touches[0].clientY;
-    }
-  };
-
-  const handleInteractionEnd = (e) => {
-    if (isTouchDevice) {
-      if (touchStartRef.current !== null) {
-        const touchEnd = e.changedTouches[0].clientY;
-        const diff = Math.abs(touchEnd - touchStartRef.current);
-        
-        if (diff < 5) { // If the touch movement is less than 5px, consider it a tap
-          handleFlip();
-        }
-      }
-      touchStartRef.current = null;
-    } else {
-      handleFlip();
-    }
-  };
-
   const handleFlip = () => {
     setIsFlipped((prev) => !prev);
   };
 
   return (
     <motion.div
-      className={`relative perspective-1000 bg-gradient-to-br ${
+      className={`relative perspective-1000 bg-gradient-to-br cursor-pointer ${
         typeColors[types[0].toLowerCase()] || "from-gray-700/80 to-gray-800/80"
-      } rounded-3xl p-6 shadow-lg transition-all duration-300 overflow-hidden h-[400px] ${isTouchDevice ? '' : 'cursor-pointer'}`}
-      onTouchStart={handleInteractionStart}
-      onTouchEnd={handleInteractionEnd}
-      onClick={isTouchDevice ? undefined : handleFlip}
+      } rounded-3xl p-6 shadow-lg transition-all duration-300 overflow-hidden h-[400px]`}
+      onClick={handleFlip}
     >
       {/* Background design */}
       <div className="absolute inset-0 opacity-30">
