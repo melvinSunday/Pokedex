@@ -65,51 +65,40 @@ const PokemonCard = ({
     setImageError(true);
   };
 
+  const handleInteractionStart = (e) => {
+    if (isTouchDevice) {
+      touchStartRef.current = e.touches[0].clientY;
+    }
+  };
+
+  const handleInteractionEnd = (e) => {
+    if (isTouchDevice) {
+      if (touchStartRef.current !== null) {
+        const touchEnd = e.changedTouches[0].clientY;
+        const diff = Math.abs(touchEnd - touchStartRef.current);
+        
+        if (diff < 5) { // If the touch movement is less than 5px, consider it a tap
+          handleFlip();
+        }
+      }
+      touchStartRef.current = null;
+    } else {
+      handleFlip();
+    }
+  };
+
   const handleFlip = () => {
     setIsFlipped((prev) => !prev);
   };
 
-  const handleTouchStart = (e) => {
-    touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-    };
-  };
-
-  const handleTouchEnd = (e) => {
-    if (touchStartRef.current) {
-      const touchEnd = {
-        x: e.changedTouches[0].clientX,
-        y: e.changedTouches[0].clientY,
-      };
-      const diffX = Math.abs(touchEnd.x - touchStartRef.current.x);
-      const diffY = Math.abs(touchEnd.y - touchStartRef.current.y);
-      
-      if (diffX < 5 && diffY < 5) {
-        handleFlip();
-      }
-      
-      touchStartRef.current = null;
-    }
-  };
-
-  const handleInteraction = (e) => {
-    if (isTouchDevice) {
-      // For touch devices, do nothing here as we handle touch separately
-      return;
-    }
-    // For non-touch devices, flip the card on click
-    handleFlip();
-  };
-
   return (
     <motion.div
-      className={`relative perspective-1000 bg-gradient-to-br cursor-pointer ${
+      className={`relative perspective-1000 bg-gradient-to-br ${
         typeColors[types[0].toLowerCase()] || "from-gray-700/80 to-gray-800/80"
-      } rounded-3xl p-6 shadow-lg transition-all duration-300 overflow-hidden h-[400px]`}
-      onClick={handleInteraction}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      } rounded-3xl p-6 shadow-lg transition-all duration-300 overflow-hidden h-[400px] ${isTouchDevice ? '' : 'cursor-pointer'}`}
+      onTouchStart={handleInteractionStart}
+      onTouchEnd={handleInteractionEnd}
+      onClick={isTouchDevice ? undefined : handleFlip}
     >
       {/* Background design */}
       <div className="absolute inset-0 opacity-30">

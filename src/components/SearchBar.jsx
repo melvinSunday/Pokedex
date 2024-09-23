@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 import PropTypes from 'prop-types';
 import debounce from 'lodash/debounce';
@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const SearchBar = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFixed, setIsFixed] = useState(false);
+  const inputRef = useRef(null);
 
   const debouncedSearch = useCallback(
     debounce((value) => {
@@ -24,6 +25,7 @@ const SearchBar = ({ onSearch }) => {
   const handleClearSearch = () => {
     setSearchTerm("");
     onSearch("");
+    inputRef.current.focus();
   };
 
   useEffect(() => {
@@ -33,6 +35,12 @@ const SearchBar = ({ onSearch }) => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   }, []);
 
   return (
@@ -48,6 +56,7 @@ const SearchBar = ({ onSearch }) => {
           <div className="container mx-auto px-4">
             <div className="relative flex items-center">
               <input
+                ref={inputRef}
                 type="text"
                 value={searchTerm}
                 onChange={handleInputChange}
@@ -69,6 +78,7 @@ const SearchBar = ({ onSearch }) => {
           <div className="container mx-auto px-4">
             <div className="relative flex items-center">
               <input
+                ref={inputRef}
                 type="text"
                 value={searchTerm}
                 onChange={handleInputChange}
