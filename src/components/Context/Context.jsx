@@ -230,25 +230,23 @@ const Context = ({ children }) => {
 
     setIsLoading(true);
     try {
-      // Instead of fetching a limited list, we'll directly search by name or ID
-      let pokemonToFetch;
-      
-      if (isNaN(searchTerm)) {
-        // If searchTerm is not a number, search by name
-        pokemonToFetch = searchTerm.toLowerCase();
-      } else {
-        // If searchTerm is a number, search by ID
-        pokemonToFetch = searchTerm;
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=10000`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
 
-      const pokemonDetails = await fetchPokemonDetails(`https://pokeapi.co/api/v2/pokemon/${pokemonToFetch}`);
-      
-      if (pokemonDetails) {
-        setSearchResults([pokemonDetails]);
-      } else {
-        setSearchResults([]);
-      }
-      
+      const filteredPokemons = data.results.filter(pokemon =>
+        pokemon.name.toLowerCase().includes(searchTerm.toLowerCase()) || pokemon.url.split('/').slice(-2, -1)[0] === searchTerm
+      );
+
+      const pokemonDetails = await Promise.all(
+        filteredPokemons.map(async (pokemon) => {
+          return await fetchPokemonDetails(pokemon.url);
+        })
+      );
+
+      setSearchResults(pokemonDetails.filter(pokemon => pokemon !== null));
       setIsLoading(false);
     } catch (error) {
       console.error(`Failed to search pokemons: ${error}`);

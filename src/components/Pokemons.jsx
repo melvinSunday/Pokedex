@@ -9,6 +9,7 @@ const Pokemons = ({ searchTerm }) => {
   const { pokemons, isLoading, loadMorePokemons, searchPokemons, searchResults, hasMorePokemons } = useContext(PokemonContext);
   const [visiblePokemons, setVisiblePokemons] = useState(new Set());
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
   const observerRef = useRef();
   const loadMoreRef = useRef(null);
   const pokemonRefs = useRef({});
@@ -16,8 +17,11 @@ const Pokemons = ({ searchTerm }) => {
   useEffect(() => {
     const debouncedSearch = debounce((term) => {
       setDebouncedSearchTerm(term);
-      searchPokemons(term);
-    }, 300);  
+      setIsSearchLoading(true);
+      searchPokemons(term).finally(() => {
+        setIsSearchLoading(false);
+      });
+    }, 300);
 
     debouncedSearch(searchTerm);
 
@@ -27,7 +31,7 @@ const Pokemons = ({ searchTerm }) => {
   }, [searchTerm, searchPokemons]);
 
   const displayedPokemons = useMemo(() => {
-    return debouncedSearchTerm ? (searchResults.length > 0 ? searchResults : []) : pokemons;
+    return debouncedSearchTerm ? searchResults : pokemons;
   }, [debouncedSearchTerm, searchResults, pokemons]);
 
   const handleIntersection = useCallback((entries) => {
@@ -103,7 +107,7 @@ const Pokemons = ({ searchTerm }) => {
     );
   }
 
-  if (debouncedSearchTerm && displayedPokemons.length === 0) {
+  if (debouncedSearchTerm && displayedPokemons.length === 0 && !isSearchLoading) {
     return (
       <div className="mt-8 text-center text-xl font-semibold text-gray-700">
         No Pokémon found matching &quot;{debouncedSearchTerm}&quot;.
@@ -159,11 +163,18 @@ const Pokemons = ({ searchTerm }) => {
                 moves={pokemon.moves}
               />
             ) : (
-              <LoadingSkeleton /> // Replace the placeholder div with LoadingSkeleton
+              <LoadingSkeleton />
             )}
           </div>
         );
       })}
+      {isSearchLoading && (
+        <>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <LoadingSkeleton key={`search-skeleton-${index}`} />
+          ))}
+        </>
+      )}
       {!debouncedSearchTerm && hasMorePokemons && <div ref={loadMoreRef} style={{ height: "20px" }} />}
       {isLoading && displayedPokemons.length > 0 && (
         <>
