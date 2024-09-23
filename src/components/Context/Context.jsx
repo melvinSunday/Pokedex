@@ -7,8 +7,8 @@ const Context = ({ children }) => {
   const [pokemons, setPokemons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [offset, setOffset] = useState(0);
-  const initialLoad = 100;
-  const batchSize = 100;
+  const initialLoad = 50;
+  const batchSize = 50;
 
   const fetchPokemons = useCallback(async (limit, currentOffset) => {
     setIsLoading(true);

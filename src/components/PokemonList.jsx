@@ -71,7 +71,7 @@ const PokemonList = ({ searchTerm, currentPage, pokemonsPerPage }) => {
 PokemonList.propTypes = {
   searchTerm: PropTypes.string.isRequired,
   currentPage: PropTypes.number.isRequired,
-  pokemonsPerPage: PropTypes.number.isRequired,
+  // pokemonsPerPage: PropTypes.number.isRequired,
 };
 
 export default PokemonList;

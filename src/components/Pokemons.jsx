@@ -161,8 +161,10 @@ const Pokemons = ({ searchTerm }) => {
       })}
       {!debouncedSearchTerm && <div ref={loadMoreRef} style={{ height: "20px" }} />}
       {isLoading && pokemons.length > 0 && (
-        <div className="col-span-full flex justify-center">
-          <LoadingSkeleton />
+        <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <LoadingSkeleton key={`loading-skeleton-${index}`} />
+          ))}
         </div>
       )}
     </div>
