@@ -88,10 +88,6 @@ src/
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
-
 ## Acknowledgements
 
 - [PokeAPI](https://pokeapi.co/) for providing the Pokémon data
@@ -99,4 +95,11 @@ This project is open source and available under the [MIT License](LICENSE).
 - [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
 - [Framer Motion](https://www.framer.com/motion/) for the animation library
 - [Ant Design](https://ant.design/) for UI components
+
+
+## Credits
+
+© 2024 Melvin Giovanni Domingo. All rights reserved.
+
+
 
