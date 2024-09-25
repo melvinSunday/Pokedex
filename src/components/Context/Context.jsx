@@ -9,7 +9,7 @@ const Context = ({ children }) => {
     useFetchPokemons();
   const [offset, setOffset] = useState(0);
   const initialLoad = 5;
-  const batchSize = 10;
+  const batchSize = 5;
 
   const [searchResults, setSearchResults] = useState([]);
 
