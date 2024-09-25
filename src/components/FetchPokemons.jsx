@@ -135,7 +135,7 @@ export const useFetchPokemons = () => {
                         evolutionChainData
                     );
 
-                    const fetchMoves = async (offset = 0, limit = pokemonData.moves.length) => {
+                    const fetchMoves = async (offset = 0, limit = 15) => {
                         const movesToFetch = pokemonData.moves.slice(offset, offset + limit);
                         const fetchedMoves = await Promise.all(movesToFetch.map(async (move) => {
                             const moveRes = await fetch(move.move.url);
@@ -163,7 +163,7 @@ export const useFetchPokemons = () => {
                         return fetchedMoves.filter(move => move !== null);
                     };
 
-                    const initialMoves = await fetchMoves();
+                    const initialMoves = await fetchMoves(0, 10);
 
                     pokemonDetails.push({
                         ...pokemonData,
