@@ -21,7 +21,7 @@ const Pokemons = ({ searchTerm }) => {
       searchPokemons(term).finally(() => {
         setIsSearchLoading(false);
       });
-    }, 300);
+    }, 100);
 
     debouncedSearch(searchTerm);
 
