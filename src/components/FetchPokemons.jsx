@@ -5,7 +5,7 @@ export const useFetchPokemons = () => {
     const [hasMorePokemons, setHasMorePokemons] = useState(true);
     const [pokemons, setPokemons] = useState([]);
     const [offset, setOffset] = useState(0);
-    const limit = 10; 
+    const limit = 13; 
 
     const fetchPokemons = useCallback(async () => {
         if (!hasMorePokemons || isLoading) return; 
