@@ -1,19 +1,16 @@
+//custom hook
 import { useCallback, useState } from "react";
 
 export const useFetchPokemons = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [hasMorePokemons, setHasMorePokemons] = useState(true);
 	const [pokemons, setPokemons] = useState([]);
-	const [offset, setOffset] = useState(0);
-	const limit = 3;
 
-	const fetchPokemons = useCallback(async () => {
-		if (!hasMorePokemons || isLoading) return; // Prevent multiple fetches while loading
+	const fetchPokemons = useCallback(async (limit, currentOffset) => {
 		setIsLoading(true);
-
 		try {
 			const response = await fetch(
-				`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`
+				`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${currentOffset}`
 			);
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
@@ -135,7 +132,9 @@ export const useFetchPokemons = () => {
 						evolutionChainData
 					);
 
-					const fetchMoves = async (offset = 0, limit = pokemonData.moves.length) => {
+					// Initialize moves with a function to fetch more
+					const initialMoveCount = 5;
+					const fetchMoves = async (offset = 0, limit = initialMoveCount) => {
 						const movesToFetch = pokemonData.moves.slice(offset, offset + limit);
 						const fetchedMoves = await Promise.all(movesToFetch.map(async (move) => {
 							const moveRes = await fetch(move.move.url);
@@ -213,14 +212,13 @@ export const useFetchPokemons = () => {
 			}
 
 			setPokemons((prev) => [...prev, ...pokemonDetails]);
-			setOffset((prevOffset) => prevOffset + limit); // Increment offset for next batch
 			setIsLoading(false);
 		} catch (error) {
 			console.error(`Failed to fetch pokemons: ${error}`);
 			setIsLoading(false);
 			setHasMorePokemons(false);
 		}
-	}, [offset, hasMorePokemons, isLoading]);
+	}, []);
 
 	return { fetchPokemons, isLoading, setIsLoading, hasMorePokemons, pokemons };
 };
