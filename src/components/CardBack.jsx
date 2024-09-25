@@ -266,7 +266,7 @@ const CardBack = ({
             <h3 className="text-2xl font-bold mb-6 text-center">
               Evolution Chain
             </h3>
-            <div className="flex flex-wrap justify-center items-center gap-8">
+            <div className="flex flex-col items-center gap-4">
               {evolutions.map((evolution, index) => (
                 <motion.div
                   key={index}
