@@ -1,16 +1,19 @@
-//custom hook
 import { useCallback, useState } from "react";
 
 export const useFetchPokemons = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [hasMorePokemons, setHasMorePokemons] = useState(true);
 	const [pokemons, setPokemons] = useState([]);
+	const [offset, setOffset] = useState(0);
+	const limit = 2;
 
-	const fetchPokemons = useCallback(async (limit, currentOffset) => {
+	const fetchPokemons = useCallback(async () => {
+		if (!hasMorePokemons || isLoading) return; // Prevent multiple fetches while loading
 		setIsLoading(true);
+
 		try {
 			const response = await fetch(
-				`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${currentOffset}`
+				`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`
 			);
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
@@ -132,29 +135,35 @@ export const useFetchPokemons = () => {
 						evolutionChainData
 					);
 
-					const moves = await Promise.all(pokemonData.moves.map(async (move) => {
-						const moveRes = await fetch(move.move.url);
-						if (!moveRes.ok) {
-							console.warn(`Failed to fetch move details for ${move.move.name}`);
-							return null;
-						}
-						const moveData = await moveRes.json();
-						return {
-							name: move.move.name
-								.replace(/-/g, " ")
-								.replace(/\w\S*/g, (w) =>
-									w.replace(/^\w/, (c) => c.toUpperCase())
-								),
-							level_learned_at:
-								move.version_group_details[0].level_learned_at,
-							learn_method:
-								move.version_group_details[0].move_learn_method.name,
-							target: moveData.target.name,
-							power: moveData.power,
-							pp: moveData.pp,
-							accuracy: moveData.accuracy,
-						};
-					}));
+					const fetchMoves = async (offset = 0, limit = pokemonData.moves.length) => {
+						const movesToFetch = pokemonData.moves.slice(offset, offset + limit);
+						const fetchedMoves = await Promise.all(movesToFetch.map(async (move) => {
+							const moveRes = await fetch(move.move.url);
+							if (!moveRes.ok) {
+								console.warn(`Failed to fetch move details for ${move.move.name}`);
+								return null;
+							}
+							const moveData = await moveRes.json();
+							return {
+								name: move.move.name
+									.replace(/-/g, " ")
+									.replace(/\w\S*/g, (w) =>
+										w.replace(/^\w/, (c) => c.toUpperCase())
+									),
+								level_learned_at:
+									move.version_group_details[0].level_learned_at,
+								learn_method:
+									move.version_group_details[0].move_learn_method.name,
+								target: moveData.target.name,
+								power: moveData.power,
+								pp: moveData.pp,
+								accuracy: moveData.accuracy,
+							};
+						}));
+						return fetchedMoves.filter(move => move !== null);
+					};
+
+					const initialMoves = await fetchMoves();
 
 					pokemonDetails.push({
 						...pokemonData,
@@ -189,7 +198,9 @@ export const useFetchPokemons = () => {
 						speed: stats.speed,
 						evolutions: evolutions,
 						evolutionChain: evolutionChainData,
-						moves: moves.filter(move => move !== null),
+						moves: initialMoves,
+						fetchMoreMoves: fetchMoves,
+						totalMoves: pokemonData.moves.length,
 						isMythical: speciesData.is_mythical,
 						isLegendary: speciesData.is_legendary,
 						isBaby: speciesData.is_baby,
@@ -202,13 +213,14 @@ export const useFetchPokemons = () => {
 			}
 
 			setPokemons((prev) => [...prev, ...pokemonDetails]);
+			setOffset((prevOffset) => prevOffset + limit); // Increment offset for next batch
 			setIsLoading(false);
 		} catch (error) {
 			console.error(`Failed to fetch pokemons: ${error}`);
 			setIsLoading(false);
 			setHasMorePokemons(false);
 		}
-	}, []);
+	}, [offset, hasMorePokemons, isLoading]);
 
 	return { fetchPokemons, isLoading, setIsLoading, hasMorePokemons, pokemons };
 };
