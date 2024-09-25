@@ -257,11 +257,11 @@ PokemonCard.propTypes = {
   speed: PropTypes.number.isRequired,
 
   //Evolution
-  evolutions: PropTypes.array.isRequired,
-  evolutionChain: PropTypes.array.isRequired,
+  evolutions: PropTypes.array,
+  evolutionChain: PropTypes.array,
 
   //Moves
-  moves: PropTypes.array.isRequired,
+  moves: PropTypes.array
 };
 
 export default PokemonCard;

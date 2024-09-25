@@ -312,18 +312,24 @@ const CardBack = ({
                 >
                   <h4 className="text-lg font-semibold mb-2">{move.name}</h4>
               
-                  <p className="text-sm text-gray-400">
-                    Target: {move.target}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Power: {move.power}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    PP: {move.pp}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Accuracy: {move.accuracy}
-                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Target</p>
+                      <p className="text-sm font-medium">{move.target}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Power</p>
+                      <p className="text-sm font-medium">{move.power}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">PP</p>
+                      <p className="text-sm font-medium">{move.pp}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Accuracy</p>
+                      <p className="text-sm font-medium">{move.accuracy}</p>
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -436,11 +442,11 @@ CardBack.propTypes = {
   speed: PropTypes.number.isRequired,
 
   //Evolution
-  evolutions: PropTypes.array.isRequired,
-  evolutionChain: PropTypes.array.isRequired,
+  evolutions: PropTypes.array,
+  evolutionChain: PropTypes.array,
 
   //Moves
-  moves: PropTypes.array.isRequired,
+  moves: PropTypes.array
 };
 
 export default CardBack;

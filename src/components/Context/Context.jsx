@@ -169,16 +169,28 @@ const Context = ({ children }) => {
         evolutionChainData
       );
 
-      const moves = pokemonData.moves.map((move) => ({
-        name: move.move.name
-          .replace(/-/g, " ")
-          .replace(/\w\S*/g, (w) =>
-            w.replace(/^\w/, (c) => c.toUpperCase())
-          ),
-        level_learned_at:
-          move.version_group_details[0].level_learned_at,
-        learn_method:
-          move.version_group_details[0].move_learn_method.name,
+      const moves = await Promise.all(pokemonData.moves.map(async (move) => {
+        const moveRes = await fetch(move.move.url);
+        if (!moveRes.ok) {
+          console.warn(`Failed to fetch move details for ${move.move.name}`);
+          return null;
+        }
+        const moveData = await moveRes.json();
+        return {
+          name: move.move.name
+            .replace(/-/g, " ")
+            .replace(/\w\S*/g, (w) =>
+              w.replace(/^\w/, (c) => c.toUpperCase())
+            ),
+          level_learned_at:
+            move.version_group_details[0].level_learned_at,
+          learn_method:
+            move.version_group_details[0].move_learn_method.name,
+          target: moveData.target.name,
+          power: moveData.power,
+          pp: moveData.pp,
+          accuracy: moveData.accuracy,
+        };
       }));
 
       return {
