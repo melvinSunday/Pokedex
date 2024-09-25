@@ -3,7 +3,7 @@
 A modern, responsive Pokédex application built with React, Vite, and Tailwind CSS. This app fetches data from the PokeAPI to display detailed information about Pokémon.
 
 <p align="center">
-  <img src="./src/assets/pokedex-preview.png" alt="Pokédex App Preview" width="600">
+  <img src="./src/assets/pokedex-preview.png" alt="Pokédex App Preview">
 </p>
 
 ## Features
