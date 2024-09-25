@@ -132,14 +132,16 @@ const CardBack = ({
                 },
                 {
                   label: "Height",
-                  value: `${height} m`,
+                  value: `${(height / 10).toFixed(1)} m. (${((height / 10) * 3.281).toFixed(2)} ft.)`,
                   color: "text-pink-400",
                 },
                 {
                   label: "Weight",
-                  value: `${weight} kg`,
+                  value: `${(weight / 10).toFixed(1)} kg. (${((weight / 10) * 2.205).toFixed(2)} lb.)`,
                   color: "text-indigo-400",
                 },
+                
+                
                 {
                   label: "Capture Rate",
                   value: `${((captureRate / 255) * 100).toFixed(2)}%`,
