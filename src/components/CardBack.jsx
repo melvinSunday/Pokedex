@@ -311,12 +311,7 @@ const CardBack = ({
                   className="bg-gray-800 rounded-lg p-4 shadow-lg"
                 >
                   <h4 className="text-lg font-semibold mb-2">{move.name}</h4>
-                  <p className="text-sm text-gray-400">
-                    Level: {move.level_learned_at}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Method: {move.learn_method}
-                  </p>
+              
                   <p className="text-sm text-gray-400">
                     Target: {move.target}
                   </p>
