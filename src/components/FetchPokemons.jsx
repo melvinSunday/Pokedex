@@ -133,7 +133,7 @@ export const useFetchPokemons = () => {
 					);
 
 					// Initialize moves with a function to fetch more
-					const initialMoveCount = 5;
+					const initialMoveCount = 15;
 					const fetchMoves = async (offset = 0, limit = initialMoveCount) => {
 						const movesToFetch = pokemonData.moves.slice(offset, offset + limit);
 						const fetchedMoves = await Promise.all(movesToFetch.map(async (move) => {
