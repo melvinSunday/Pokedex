@@ -3,7 +3,7 @@ import PokemonCard from "./PokemonCard";
 import { useContext } from "react";
 import { PokemonContext } from "./Context/Context";
 
-const PokemonList = ({ searchTerm, currentPage, pokemonsPerPage }) => {
+const PokemonList = ({ searchTerm }) => {
   const { pokemons } = useContext(PokemonContext);
   const filteredPokemons = pokemons.filter(
     (pokemon) =>
@@ -11,20 +11,13 @@ const PokemonList = ({ searchTerm, currentPage, pokemonsPerPage }) => {
       pokemon.id.toString().includes(searchTerm)
   );
 
-  const indexOfLastPokemon = currentPage * pokemonsPerPage;
-  const indexOfFirstPokemon = indexOfLastPokemon - pokemonsPerPage;
-  const currentPokemons = filteredPokemons.slice(
-    indexOfFirstPokemon,
-    indexOfLastPokemon
-  );
-
-  if (currentPokemons.length === 0) {
+  if (filteredPokemons.length === 0) {
     return <div className="mt-8 text-center">No Pokémon found.</div>;
   }
 
   return (
     <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {currentPokemons.map((pokemon) => (
+      {filteredPokemons.map((pokemon) => (
         <PokemonCard
           key={pokemon.id}
           //About
@@ -70,8 +63,6 @@ const PokemonList = ({ searchTerm, currentPage, pokemonsPerPage }) => {
 
 PokemonList.propTypes = {
   searchTerm: PropTypes.string.isRequired,
-  currentPage: PropTypes.number.isRequired,
-  // pokemonsPerPage: PropTypes.number.isRequired,
 };
 
 export default PokemonList;

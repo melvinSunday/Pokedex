@@ -317,6 +317,18 @@ const CardBack = ({
                   <p className="text-sm text-gray-400">
                     Method: {move.learn_method}
                   </p>
+                  <p className="text-sm text-gray-400">
+                    Target: {move.target}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Power: {move.power}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    PP: {move.pp}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Accuracy: {move.accuracy}
+                  </p>
                 </motion.div>
               ))}
             </div>

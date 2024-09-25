@@ -6,7 +6,7 @@ import LoadingSkeleton from "./LoadingSkeleton";
 import { debounce } from 'lodash';
 
 const Pokemons = ({ searchTerm }) => {
-  const { pokemons, isLoading, loadMorePokemons, searchPokemons, searchResults, hasMorePokemons } = useContext(PokemonContext);
+  const { pokemons, isLoading, loadMorePokemons, searchPokemons, searchResults, hasMorePokemons, } = useContext(PokemonContext);
   const [visiblePokemons, setVisiblePokemons] = useState(new Set());
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
