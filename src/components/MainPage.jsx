@@ -28,7 +28,7 @@ const MainPage = () => {
           </p>
         </motion.div>
 
-        <div className="flex items-center justify-center mb-8 relative">
+        <div className="flex items-center justify-center mb-4 relative">
           <div className="w-full max-w-2xl">
             <SearchBar onSearch={handleSearch} />
           </div>
