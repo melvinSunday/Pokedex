@@ -131,28 +131,18 @@ export const useFetchPokemons = () => {
 						const evolutions = await getEvolutionDetails(
 							evolutionChainData
 						);
-						const moves = await Promise.all(pokemonData.moves.map(async (move) => {
-							const moveDetailsRes = await fetch(move.move.url);
-							if (!moveDetailsRes.ok) {
-								console.warn(`Failed to fetch details for move: ${move.move.name}`);
-								return null;
-							}
-							const moveDetails = await moveDetailsRes.json();
-							return {
-								name: move.move.name
-									.replace(/-/g, " ")
-									.replace(/\w\S*/g, (w) =>
-										w.replace(/^\w/, (c) => c.toUpperCase())
-									),
-								level_learned_at:
-									move.version_group_details[0].level_learned_at,
-								learn_method:
-									move.version_group_details[0].move_learn_method.name,
-								target: moveDetails.target.name,
-								power: moveDetails.power,
-								pp: moveDetails.pp,
-								accuracy: moveDetails.accuracy
-							};
+
+						const moves = pokemonData.moves.map((move) => ({
+							name: move.move.name
+								.replace(/-/g, " ")
+								.replace(/\w\S*/g, (w) =>
+									w.replace(/^\w/, (c) => c.toUpperCase())
+								),
+							level_learned_at:
+								move.version_group_details[0].level_learned_at,
+							learn_method:
+								move.version_group_details[0].move_learn_method.name,
+
 						}));
 
 						return {
