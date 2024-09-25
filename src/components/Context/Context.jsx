@@ -8,8 +8,8 @@ const Context = ({ children }) => {
   const { fetchPokemons, isLoading, hasMorePokemons, pokemons, setIsLoading } =
     useFetchPokemons();
   const [offset, setOffset] = useState(0);
-  const initialLoad = 25;
-  const batchSize = 25;
+  const initialLoad = 15;
+  const batchSize = 15;
 
   const [searchResults, setSearchResults] = useState([]);
 
