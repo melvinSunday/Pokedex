@@ -156,18 +156,13 @@ const Context = ({ children }) => {
             image: evolutionImage,
           });
 
-          evoData = evoData["evolves_to"][0];
-        } while (
-          evoData &&
-          Object.prototype.hasOwnProperty.call(evoData, "evolves_to")
-        );
+          evoData = evoData.evolves_to[0];
+        } while (evoData && evoData.evolves_to);
 
         return evolutions;
       };
 
-      const evolutions = await getEvolutionDetails(
-        evolutionChainData
-      );
+      const evolutions = await getEvolutionDetails(evolutionChainData);
 
       const fetchMoves = async (offset = 0, limit = 15) => {
         const movesToFetch = pokemonData.moves.slice(offset, offset + limit);
