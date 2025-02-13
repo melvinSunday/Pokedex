@@ -13,6 +13,9 @@ const Context = ({ children }) => {
 
   const [searchResults, setSearchResults] = useState([]);
 
+  const evolutionChainCache = new Map();
+  const moveCache = new Map();
+
   useEffect(() => {
     fetchPokemons(initialLoad, 0);
   }, [fetchPokemons]);
@@ -117,18 +120,15 @@ const Context = ({ children }) => {
         return acc;
       }, {});
 
-      const evolutionChainRes = await fetch(
-        speciesData.evolution_chain.url
-      );
-
-      if (!evolutionChainRes.ok) {
-        console.warn(
-          `Failed to fetch evolution chain for ${url}`
-        );
-        return null;
+      let evolutionChainData;
+      if (evolutionChainCache.has(speciesData.evolution_chain.url)) {
+        evolutionChainData = evolutionChainCache.get(speciesData.evolution_chain.url);
+      } else {
+        const evolutionChainRes = await fetch(speciesData.evolution_chain.url);
+        if (!evolutionChainRes.ok) return null;
+        evolutionChainData = await evolutionChainRes.json();
+        evolutionChainCache.set(speciesData.evolution_chain.url, evolutionChainData);
       }
-
-      const evolutionChainData = await evolutionChainRes.json();
 
       const getEvolutionDetails = async (evolutionData) => {
         const evolutions = [];
@@ -169,29 +169,38 @@ const Context = ({ children }) => {
         evolutionChainData
       );
 
-      const moves = await Promise.all(pokemonData.moves.map(async (move) => {
-        const moveRes = await fetch(move.move.url);
-        if (!moveRes.ok) {
-          console.warn(`Failed to fetch move details for ${move.move.name}`);
-          return null;
-        }
-        const moveData = await moveRes.json();
-        return {
-          name: move.move.name
-            .replace(/-/g, " ")
-            .replace(/\w\S*/g, (w) =>
-              w.replace(/^\w/, (c) => c.toUpperCase())
-            ),
-          level_learned_at:
-            move.version_group_details[0].level_learned_at,
-          learn_method:
-            move.version_group_details[0].move_learn_method.name,
-          target: moveData.target.name,
-          power: moveData.power,
-          pp: moveData.pp,
-          accuracy: moveData.accuracy,
-        };
-      }));
+      const fetchMoves = async (offset = 0, limit = 15) => {
+        const movesToFetch = pokemonData.moves.slice(offset, offset + limit);
+        return Promise.all(
+          movesToFetch.map(async (move) => {
+            if (moveCache.has(move.move.url)) {
+              return moveCache.get(move.move.url);
+            }
+            const moveRes = await fetch(move.move.url);
+            if (!moveRes.ok) return null;
+            const moveData = await moveRes.json();
+            const formattedMove = {
+              name: move.move.name
+                .replace(/-/g, " ")
+                .replace(/\w\S*/g, (w) =>
+                  w.replace(/^\w/, (c) => c.toUpperCase())
+                ),
+              level_learned_at:
+                move.version_group_details[0].level_learned_at,
+              learn_method:
+                move.version_group_details[0].move_learn_method.name,
+              target: moveData.target.name,
+              power: moveData.power,
+              pp: moveData.pp,
+              accuracy: moveData.accuracy,
+            };
+            moveCache.set(move.move.url, formattedMove);
+            return formattedMove;
+          })
+        );
+      };
+
+      const initialMoves = await fetchMoves();
 
       return {
         ...pokemonData,
@@ -226,7 +235,8 @@ const Context = ({ children }) => {
         speed: stats.speed,
         evolutions: evolutions,
         evolutionChain: evolutionChainData,
-        moves: moves,
+        moves: initialMoves,
+        fetchMoreMoves: fetchMoves,
         isMythical: speciesData.is_mythical,
         isLegendary: speciesData.is_legendary,
         isBaby: speciesData.is_baby,
