@@ -2,7 +2,7 @@ const LoadingSkeleton = () => (
     <div className="relative bg-gradient-to-br from-gray-700/80 to-gray-800/80 rounded-3xl p-6 shadow-lg animate-pulse h-[400px]">
       {/* Background design */}
       <div className="absolute inset-0 opacity-30">
-        {/* ... SVG background code ... */}
+     
       </div>
       <div className="relative w-full h-full">
         <div className="absolute top-4 right-4 z-10">
