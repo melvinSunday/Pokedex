@@ -1,4 +1,4 @@
-// custom hook to fetch pokemon data
+
 import { useCallback, useState } from "react";
 
 export const useFetchPokemons = () => {
@@ -16,11 +16,10 @@ export const useFetchPokemons = () => {
             const response = await fetch(
                 `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${currentOffset}`
             );
-            // throw error if response is not successful
+
             if (!response.ok) {
                 throw new Error(`http error! status: ${response.status}`);
             }
-            // parse response data to json
             const data = await response.json();
 
             // if no results, set hasMorePokemons to false and exit
@@ -30,7 +29,7 @@ export const useFetchPokemons = () => {
                 return;
             }
 
-            // create cache for shared resources to avoid redundant requests
+            // cache for shared resources to avoid redundant requests
             const evolutionChainCache = new Map();
             const moveCache = new Map();
 
@@ -44,13 +43,13 @@ export const useFetchPokemons = () => {
                             fetch(pokemon.url.replace("pokemon", "pokemon-species")),
                         ]);
 
-                        // log warning and return null if fetching details fails for a pokemon
+        
                         if (!pokemonRes.ok || !speciesRes.ok) {
                             console.warn(`failed to fetch details for ${pokemon.name}`);
                             return null;
                         }
 
-                        // parse pokemon and species data to json
+
                         const [pokemonData, speciesData] = await Promise.all([
                             pokemonRes.json(),
                             speciesRes.json(),
@@ -152,13 +151,13 @@ export const useFetchPokemons = () => {
                             return evolutions;
                         };
 
-                        // construct and return processed pokemon data object
+
                         return {
                             ...pokemonData,
-                            // image urls for display
+
                             image: `https://raw.githubusercontent.com/pokeapi/sprites/master/sprites/pokemon/other/home/${pokemonData.id}.png`,
                             fallbackImage: `https://raw.githubusercontent.com/pokeapi/sprites/master/sprites/pokemon/other/official-artwork/${pokemonData.id}.png`,
-                            // extract and format description from species data
+                       
                             description: speciesData.flavor_text_entries
                                 .find((entry) => entry.language.name === "en")
                                 ?.flavor_text.replace(/\f/g, " ") || "no description available",
@@ -245,18 +244,18 @@ export const useFetchPokemons = () => {
                 })
             );
 
-            // update pokemons state, appending new pokemon details and filtering out any null results (failed fetches)
+
             setPokemons((prev) => [...prev, ...pokemonDetails.filter(p => p !== null)]);
         } catch (error) {
-            // log error if fetching pokemons list fails
+
             console.error(`failed to fetch pokemons: ${error}`);
             setHasMorePokemons(false); // indicate no more pokemons can be fetched due to error
         } finally {
-            // set loading to false after fetching is complete, regardless of success or failure
+
             setIsLoading(false);
         }
-    }, []); // dependency array is empty as fetchPokemons does not depend on any external variables
+    }, []);
 
-    // return the fetchPokemons function, loading state, and pokemon data
+
     return { fetchPokemons, isLoading, setIsLoading, hasMorePokemons, pokemons };
 };
