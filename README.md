@@ -1,6 +1,6 @@
-# Pokédex React App
+# Pokédex · Field Atlas
 
-A modern, responsive Pokédex application built with React, Vite, and Tailwind CSS. This app fetches data from the PokeAPI to display detailed information about Pokémon.
+A responsive Pokémon field guide built with React, Vite, and Tailwind CSS. Browse type routes, search the National Pokédex, save field notes, and open detailed species entries. Live species data and artwork come from PokéAPI.
 
 <p align="center">
   <img src="./src/assets/pokedex-preview.png" alt="Pokédex App Preview">
@@ -8,16 +8,11 @@ A modern, responsive Pokédex application built with React, Vite, and Tailwind C
 
 ## Features
 
-- Display a list of Pokémon with infinite scrolling
-- Search functionality to find specific Pokémon
-- Detailed view for each Pokémon including:
-  - Basic information (name, number, types)
-  - Stats (HP, Attack, Defense, etc.)
-  - Evolution chain
-  - Moves
-  - Habitat and other characteristics
-- Responsive design that works on desktop and mobile devices
-- Smooth animations and transitions using Framer Motion
+- Explore the catalog by name, National Pokédex number, or Pokémon type
+- Browse a progressively loaded catalog and filter the complete results by type
+- Keep favorite species in a personal field-notes list stored in the browser
+- Open an accessible species view with overview, base stats, evolution route, and moves
+- Use the catalog on desktop or mobile, with keyboard-friendly search and reduced-motion support
 
 ## Technologies Used
 
@@ -25,10 +20,7 @@ A modern, responsive Pokédex application built with React, Vite, and Tailwind C
 - Vite
 - Tailwind CSS
 - Framer Motion
-- Ant Design
 - PokeAPI
-- Lodash
-- React-router-dom
 - React-icons
 
 ## Getting Started
@@ -66,19 +58,25 @@ A modern, responsive Pokédex application built with React, Vite, and Tailwind C
 
 5. Open your browser and visit `http://localhost:5173` to see the app running.
 
+### Performance check
+
+Run `npm run build` followed by `npm run check:bundle` to check the production page against its 120 KB gzip budget.
+
 ## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── CardBack.jsx
 │   ├── Context/
 │   │   └── Context.jsx
 │   ├── FetchPokemons.jsx
 │   ├── LoadingSkeleton.jsx
 │   ├── MainPage.jsx
+│   ├── PokemonDetailsDialog.jsx
+│   ├── PokemonCard.jsx
 │   ├── Pokemons.jsx
-│   └── PokemonCard.jsx
+│   ├── SearchBar.jsx
+│   └── typeVisuals.js
 ├── App.jsx
 ├── main.jsx
 └── index.css
@@ -94,7 +92,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [Vite](https://vitejs.dev/) for the fast development environment
 - [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
 - [Framer Motion](https://www.framer.com/motion/) for the animation library
-- [Ant Design](https://ant.design/) for UI components
+- [React Icons](https://react-icons.github.io/react-icons/) for interface icons
 
 
 ## Credits

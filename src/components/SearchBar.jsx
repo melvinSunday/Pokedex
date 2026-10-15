@@ -1,107 +1,38 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
-import PropTypes from 'prop-types';
-import debounce from 'lodash/debounce';
-import { motion, AnimatePresence } from "framer-motion";
+import PropTypes from "prop-types";
+import { HiOutlineMagnifyingGlass, HiOutlineXMark } from "react-icons/hi2";
 
-const SearchBar = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isFixed, setIsFixed] = useState(false);
-  const inputRef = useRef(null);
-
-  const debouncedSearch = useCallback(
-    debounce((value) => {
-      onSearch(value);
-    }, 300),
-    [onSearch]
-  );
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    debouncedSearch(value);
-  };
-
-  const handleClearSearch = () => {
-    setSearchTerm("");
-    onSearch("");
-    inputRef.current.focus();
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsFixed(window.scrollY > 150);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
-
-  return (
-    <AnimatePresence>
-      {isFixed ? (
-        <motion.div
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -100, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="fixed top-0 left-0 right-0 z-50 py-3 bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg"
-        >
-          <div className="container mx-auto px-4">
-            <div className="relative flex items-center">
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchTerm}
-                onChange={handleInputChange}
-                placeholder="Search Pokémon"
-                className="w-full pl-10 pr-10 py-2 rounded-full bg-opacity-20 bg-white backdrop-filter backdrop-blur-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300 ease-in-out"
-              />
-              <IoSearchOutline className="absolute left-3 text-gray-300 text-xl" />
-              {searchTerm && (
-                <IoCloseOutline
-                  className="absolute right-3 text-gray-300 text-xl cursor-pointer"
-                  onClick={handleClearSearch}
-                />
-              )}
-            </div>
-          </div>
-        </motion.div>
-      ) : (
-        <div className="py-3">
-          <div className="container mx-auto px-4">
-            <div className="relative flex items-center">
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchTerm}
-                onChange={handleInputChange}
-                placeholder="Search Pokémon"
-                className="w-full pl-10 pr-10 py-2 rounded-full bg-opacity-20 bg-white backdrop-filter backdrop-blur-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300 ease-in-out"
-              />
-              <IoSearchOutline className="absolute left-3 text-gray-300 text-xl" />
-              {searchTerm && (
-                <IoCloseOutline
-                  className="absolute right-3 text-gray-300 text-xl cursor-pointer"
-                  onClick={handleClearSearch}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
-};
+const SearchBar = ({ value, onChange }) => (
+  <label className="search-field">
+    <HiOutlineMagnifyingGlass className="search-field__icon" aria-hidden="true" />
+    <span className="sr-only">Search Pokémon by name or National Pokédex number</span>
+    <input
+      id="pokemon-search"
+      type="search"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      placeholder="Search by name or Pokédex number…"
+      autoComplete="off"
+      spellCheck="false"
+      aria-label="Search Pokémon by name or National Pokédex number"
+    />
+    {value ? (
+      <button
+        className="search-field__clear"
+        type="button"
+        onClick={() => onChange("")}
+        aria-label="Clear search"
+      >
+        <HiOutlineXMark aria-hidden="true" />
+      </button>
+    ) : (
+      <span className="search-field__hint" aria-hidden="true">⌘ K</span>
+    )}
+  </label>
+);
 
 SearchBar.propTypes = {
-  onSearch: PropTypes.func.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
 };
 
 export default SearchBar;

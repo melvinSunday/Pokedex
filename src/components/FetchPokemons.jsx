@@ -1,261 +1,285 @@
+import { useCallback, useRef, useState } from "react";
 
-import { useCallback, useState } from "react";
+const API_URL = "https://pokeapi.co/api/v2";
+const HOME_SPRITE_URL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home";
+const INITIAL_MOVE_COUNT = 15;
+
+const getIdFromUrl = (url) => Number(url.split("/").filter(Boolean).at(-1));
+
+const makePokemonEntry = ({ name, url }) => ({
+  id: getIdFromUrl(url),
+  name,
+  url,
+});
+
+const capitalize = (value = "") =>
+  value.replace(/-/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+const collectEvolutionRoutes = (node, previousStops = [], routes = []) => {
+  const speciesId = getIdFromUrl(node.species.url);
+  const evolutionDetails = node.evolution_details?.[0];
+  const stop = {
+    species_name: node.species.name,
+    min_level: evolutionDetails?.min_level,
+    trigger_name: evolutionDetails?.trigger?.name,
+    item: evolutionDetails?.item?.name,
+    image: `${HOME_SPRITE_URL}/${speciesId}.png`,
+  };
+  const route = [...previousStops, stop];
+
+  if (node.evolves_to.length === 0) routes.push(route);
+  else node.evolves_to.forEach((evolution) => collectEvolutionRoutes(evolution, route, routes));
+  return routes;
+};
 
 export const useFetchPokemons = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMorePokemons, setHasMorePokemons] = useState(true);
+  const [pokemonListError, setPokemonListError] = useState(false);
+  const [pokemons, setPokemons] = useState([]);
+  const [summaries, setSummaries] = useState({});
+  const [summaryLoading, setSummaryLoading] = useState({});
+  const [summaryErrors, setSummaryErrors] = useState({});
+  const [detailsById, setDetailsById] = useState({});
+  const [detailsLoading, setDetailsLoading] = useState({});
+  const [movesById, setMovesById] = useState({});
+  const [movesLoading, setMovesLoading] = useState({});
 
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasMorePokemons, setHasMorePokemons] = useState(true);
-    const [pokemons, setPokemons] = useState([]);
+  const pageRequests = useRef(new Map());
+  const summaryRequests = useRef(new Map());
+  const detailRequests = useRef(new Map());
+  const moveRequests = useRef(new Map());
+  const resourceRequests = useRef(new Map());
 
-    // useCallback hook to memoize the fetchPokemons function
-    const fetchPokemons = useCallback(async (limit, currentOffset) => {
-        // set loading to true when fetching starts
-        setIsLoading(true);
-        try {
-            // fetch list of pokemons with given limit and offset
-            const response = await fetch(
-                `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${currentOffset}`
-            );
-
-            if (!response.ok) {
-                throw new Error(`http error! status: ${response.status}`);
-            }
-            const data = await response.json();
-
-            // if no results, set hasMorePokemons to false and exit
-            if (data.results.length === 0) {
-                setHasMorePokemons(false);
-                setIsLoading(false);
-                return;
-            }
-
-            // cache for shared resources to avoid redundant requests
-            const evolutionChainCache = new Map();
-            const moveCache = new Map();
-
-            // process all pokémon in parallel to improve performance
-            const pokemonDetails = await Promise.all(
-                data.results.map(async (pokemon) => {
-                    try {
-                        // fetch pokemon details and species data in parallel
-                        const [pokemonRes, speciesRes] = await Promise.all([
-                            fetch(pokemon.url),
-                            fetch(pokemon.url.replace("pokemon", "pokemon-species")),
-                        ]);
-
-        
-                        if (!pokemonRes.ok || !speciesRes.ok) {
-                            console.warn(`failed to fetch details for ${pokemon.name}`);
-                            return null;
-                        }
-
-
-                        const [pokemonData, speciesData] = await Promise.all([
-                            pokemonRes.json(),
-                            speciesRes.json(),
-                        ]);
-
-                        // parallelize fetching location areas and evolution chain data
-                        const [locationAreasRes, evolutionChainRes] = await Promise.all([
-                            fetch(pokemonData.location_area_encounters),
-                            // use cached evolution chain if available, otherwise fetch and cache it
-                            evolutionChainCache.has(speciesData.evolution_chain.url)
-                                ? Promise.resolve()
-                                : fetch(speciesData.evolution_chain.url).then(res => res.json())
-                        ]);
-
-                        // cache the evolution chain data
-                        if (!evolutionChainCache.has(speciesData.evolution_chain.url)) {
-                            evolutionChainCache.set(
-                                speciesData.evolution_chain.url,
-                                evolutionChainRes
-                            );
-                        }
-
-                        // process location areas data if fetch is successful, otherwise default to empty array
-                        const locationAreasData = locationAreasRes.ok
-                            ? await locationAreasRes.json()
-                            : [];
-
-                        // lazy loading for moves: fetches initial set of moves and provides function to fetch more
-                        const initialMoveCount = 15;
-                        const fetchMoves = async (offset = 0, limit = initialMoveCount) => {
-                            // get subset of moves to fetch based on offset and limit
-                            const movesToFetch = pokemonData.moves.slice(offset, offset + limit);
-                            return Promise.all(
-                                movesToFetch.map(async (move) => {
-                                    // use cached move data if available, otherwise fetch and cache
-                                    if (moveCache.has(move.move.url)) {
-                                        return moveCache.get(move.move.url);
-                                    }
-                                    const moveRes = await fetch(move.move.url);
-                                    if (!moveRes.ok) return null; // return null if move fetch fails
-                                    const moveData = await moveRes.json();
-                                    // format move data to be more readable and useful
-                                    const formattedMove = {
-                                        name: move.move.name
-                                            .replace(/-/g, " ")
-                                            .replace(/\w\S*/g, (w) => w.replace(/^\w/, (c) => c.toUpperCase())), // format move name
-                                        level_learned_at: move.version_group_details[0].level_learned_at,
-                                        learn_method: move.version_group_details[0].move_learn_method.name,
-                                        target: moveData.target.name,
-                                        power: moveData.power,
-                                        pp: moveData.pp,
-                                        accuracy: moveData.accuracy,
-                                    };
-                                    moveCache.set(move.move.url, formattedMove); // cache formatted move
-                                    return formattedMove;
-                                })
-                            );
-                        };
-
-                        // fetch initial set of moves for the pokemon
-                        const initialMoves = await fetchMoves();
-
-                        // function to process evolution details from the evolution chain data
-                        const getEvolutionDetails = async (evolutionData) => {
-                            const evolutions = [];
-                            let evoData = evolutionData.chain;
-
-                            // traverse the evolution chain to extract evolution details
-                            do {
-                                const evolutionDetails = evoData.evolution_details[0];
-                                // fetch species data for each evolution stage
-                                const speciesRes = await fetch(
-                                    `https://pokeapi.co/api/v2/pokemon/${evoData.species.name}`
-                                );
-
-                                // log warning and return current evolutions if fetching species fails
-                                if (!speciesRes.ok) {
-                                    console.warn(`failed to fetch ${evoData.species.name}`);
-                                    return evolutions;
-                                }
-
-                                const speciesData = await speciesRes.json();
-                                // construct image url for evolution stage
-                                const evolutionImage = `https://raw.githubusercontent.com/pokeapi/sprites/master/sprites/pokemon/other/home/${speciesData.id}.png`;
-
-                                // push evolution details to the evolutions array
-                                evolutions.push({
-                                    species_name: evoData.species.name,
-                                    min_level: evolutionDetails?.min_level,
-                                    trigger_name: evolutionDetails?.trigger?.name,
-                                    item: evolutionDetails?.item?.name,
-                                    image: evolutionImage,
-                                });
-
-                                // move to the next evolution stage if available
-                                evoData = evoData.evolves_to[0];
-                            } while (evoData && evoData.evolves_to); // continue until no more evolutions
-
-                            return evolutions;
-                        };
-
-
-                        return {
-                            ...pokemonData,
-
-                            image: `https://raw.githubusercontent.com/pokeapi/sprites/master/sprites/pokemon/other/home/${pokemonData.id}.png`,
-                            fallbackImage: `https://raw.githubusercontent.com/pokeapi/sprites/master/sprites/pokemon/other/official-artwork/${pokemonData.id}.png`,
-                       
-                            description: speciesData.flavor_text_entries
-                                .find((entry) => entry.language.name === "en")
-                                ?.flavor_text.replace(/\f/g, " ") || "no description available",
-                            // format habitat name
-                            habitat: speciesData.habitat
-                                ? speciesData.habitat.name.charAt(0).toUpperCase() +
-                                    speciesData.habitat.name.slice(1)
-                                : "unknown",
-                            // format shape name
-                            shape:
-                                speciesData.shape.name.charAt(0).toUpperCase() +
-                                speciesData.shape.name.slice(1),
-                            // format egg groups and join them into a string
-                            eggGroups: speciesData.egg_groups
-                                .map(
-                                    (group) =>
-                                        group.name.charAt(0).toUpperCase() + group.name.slice(1)
-                                )
-                                .join(", "),
-                            captureRate: speciesData.capture_rate,
-                            // format and join location area names
-                            location: locationAreasData
-                                .map((area) =>
-                                    area.location_area.name
-                                        .replace(/-/g, " ")
-                                        .replace(/\w\S*/g, (w) =>
-                                            w.replace(/^\w/, (c) => c.toUpperCase())
-                                        )
-                                )
-                                .join(", "),
-                            // join varieties names
-                            varieties: speciesData.varieties
-                                .map((variety) => variety.pokemon.name)
-                                .join(", "),
-                            // extract japanese name or default to "unknown"
-                            japaneseName:
-                                speciesData.names.find((name) => name.language.name === "ja")
-                                    ?.name || "unknown",
-                            // extract japanese romaji name or default to "unknown"
-                            japaneseRomaji:
-                                speciesData.names.find(
-                                    (name) => name.language.name === "roomaji"
-                                )?.name || "unknown",
-                            // extract base stats and structure them into hp, attack, defense, etc.
-                            hp: pokemonData.stats.reduce((acc, stat) => {
-                                acc[stat.stat.name] = stat.base_stat;
-                                return acc;
-                            }, {})["hp"],
-                            attack: pokemonData.stats.reduce((acc, stat) => {
-                                acc[stat.stat.name] = stat.base_stat;
-                                return acc;
-                            }, {})["attack"],
-                            defense: pokemonData.stats.reduce((acc, stat) => {
-                                acc[stat.stat.name] = stat.base_stat;
-                                return acc;
-                            }, {})["defense"],
-                            specialAttack: pokemonData.stats.reduce((acc, stat) => {
-                                acc[stat.stat.name] = stat.base_stat;
-                                return acc;
-                            }, {})["special-attack"],
-                            specialDefense: pokemonData.stats.reduce((acc, stat) => {
-                                acc[stat.stat.name] = stat.base_stat;
-                                return acc;
-                            }, {})["special-defense"],
-                            speed: pokemonData.stats.reduce((acc, stat) => {
-                                acc[stat.stat.name] = stat.base_stat;
-                                return acc;
-                            }, {})["speed"],
-                            // process evolution details using cached evolution chain data
-                            evolutions: await getEvolutionDetails(evolutionChainCache.get(speciesData.evolution_chain.url)),
-                            evolutionChain: evolutionChainCache.get(speciesData.evolution_chain.url),
-                            moves: initialMoves, // initial set of moves
-                            fetchMoreMoves: fetchMoves, // function to fetch more moves
-                            totalMoves: pokemonData.moves.length, // total number of moves
-                            isMythical: speciesData.is_mythical,
-                            isLegendary: speciesData.is_legendary,
-                            isBaby: speciesData.is_baby,
-                        };
-                    } catch (error) {
-                        // log warning if fetching details fails for a specific pokemon
-                        console.warn(`failed to fetch details for ${pokemon.name}: ${error.message}`);
-                        return null; // return null to filter out failed pokemon fetches
-                    }
-                })
-            );
-
-
-            setPokemons((prev) => [...prev, ...pokemonDetails.filter(p => p !== null)]);
-        } catch (error) {
-
-            console.error(`failed to fetch pokemons: ${error}`);
-            setHasMorePokemons(false); // indicate no more pokemons can be fetched due to error
-        } finally {
-
-            setIsLoading(false);
+  const fetchJson = useCallback((url) => {
+    let request = resourceRequests.current.get(url);
+    if (!request) {
+      request = fetch(url).then((response) => {
+        if (!response.ok) {
+          throw new Error(`Request failed (${response.status}): ${url}`);
         }
-    }, []);
+        return response.json();
+      });
+      resourceRequests.current.set(url, request);
+      request.catch(() => resourceRequests.current.delete(url));
+    }
+    return request;
+  }, []);
 
+  const fetchPokemons = useCallback((limit, currentOffset) => {
+    const existingRequest = pageRequests.current.get(currentOffset);
+    if (existingRequest) return existingRequest;
 
-    return { fetchPokemons, isLoading, setIsLoading, hasMorePokemons, pokemons };
+    if (currentOffset === 0) {
+      setPokemonListError(false);
+      setHasMorePokemons(true);
+    }
+    setIsLoading(true);
+    const request = (async () => {
+      const data = await fetchJson(
+        `${API_URL}/pokemon?limit=${limit}&offset=${currentOffset}`
+      );
+      const entries = data.results.map(makePokemonEntry);
+
+      setPokemons((previous) => {
+        const existingIds = new Set(previous.map((pokemon) => pokemon.id));
+        return [...previous, ...entries.filter((pokemon) => !existingIds.has(pokemon.id))];
+      });
+      if (currentOffset === 0) setPokemonListError(false);
+      setHasMorePokemons(Boolean(data.next));
+      return entries;
+    })()
+      .catch((error) => {
+        console.error(`Failed to fetch Pokémon list: ${error.message}`);
+        if (currentOffset === 0) setPokemonListError(true);
+        setHasMorePokemons(false);
+        return [];
+      })
+      .finally(() => {
+        setIsLoading(false);
+        pageRequests.current.delete(currentOffset);
+      });
+
+    pageRequests.current.set(currentOffset, request);
+    return request;
+  }, [fetchJson]);
+
+  const loadPokemonSummary = useCallback((pokemon) => {
+    if (!pokemon?.id || !pokemon.url) return Promise.resolve(null);
+
+    let request = summaryRequests.current.get(pokemon.id);
+    if (!request) {
+      setSummaryLoading((previous) => ({ ...previous, [pokemon.id]: true }));
+      setSummaryErrors((previous) => ({ ...previous, [pokemon.id]: false }));
+      request = fetchJson(pokemon.url).then((data) => {
+        const stats = Object.fromEntries(
+          data.stats.map(({ stat, base_stat }) => [stat.name, base_stat])
+        );
+        const officialArtwork = data.sprites.other?.["official-artwork"]?.front_default;
+
+        const summary = {
+          id: data.id,
+          name: data.name,
+          types: data.types.map(({ type }) => type.name),
+          image: data.sprites.other?.home?.front_default || officialArtwork || data.sprites.front_default,
+          fallbackImage: officialArtwork || data.sprites.front_default,
+          speciesUrl: data.species.url,
+          locationAreaUrl: data.location_area_encounters,
+          height: data.height,
+          weight: data.weight,
+          hp: stats.hp,
+          attack: stats.attack,
+          defense: stats.defense,
+          specialAttack: stats["special-attack"],
+          specialDefense: stats["special-defense"],
+          speed: stats.speed,
+          moveRefs: data.moves.slice(0, INITIAL_MOVE_COUNT).map(({ move, version_group_details }) => ({
+            name: move.name,
+            url: move.url,
+            level_learned_at: version_group_details[0]?.level_learned_at,
+            learn_method: version_group_details[0]?.move_learn_method.name,
+          })),
+        };
+
+        setSummaries((previous) => ({ ...previous, [pokemon.id]: summary }));
+        return summary;
+      }).catch((error) => {
+        console.warn(`Failed to load ${pokemon.name}: ${error.message}`);
+        setSummaryErrors((previous) => ({ ...previous, [pokemon.id]: true }));
+        summaryRequests.current.delete(pokemon.id);
+        return null;
+      });
+
+      summaryRequests.current.set(pokemon.id, request);
+      request.then(() => {
+        setSummaryLoading((previous) => ({ ...previous, [pokemon.id]: false }));
+      }, () => {
+        setSummaryLoading((previous) => ({ ...previous, [pokemon.id]: false }));
+      });
+    }
+
+    return request;
+  }, [fetchJson]);
+
+  const loadPokemonDetails = useCallback((pokemon) => {
+    if (!pokemon?.id) return Promise.resolve(null);
+
+    let request = detailRequests.current.get(pokemon.id);
+    if (!request) {
+      setDetailsLoading((previous) => ({ ...previous, [pokemon.id]: true }));
+      request = (async () => {
+        const summary = summaries[pokemon.id] || await loadPokemonSummary(pokemon);
+        if (!summary) return null;
+
+        const [speciesData, locationAreasData] = await Promise.all([
+          fetchJson(summary.speciesUrl),
+          fetchJson(summary.locationAreaUrl),
+        ]);
+        const evolutionData = speciesData.evolution_chain?.url
+          ? await fetchJson(speciesData.evolution_chain.url)
+          : null;
+        const flavorText = speciesData.flavor_text_entries?.find(
+          (entry) => entry.language.name === "en"
+        )?.flavor_text;
+        const details = {
+          description: flavorText?.replace(/[\f\n]/g, " ") || "No description available.",
+          habitat: speciesData.habitat ? capitalize(speciesData.habitat.name) : "Unknown",
+          shape: capitalize(speciesData.shape?.name || "Unknown"),
+          eggGroups: speciesData.egg_groups.map(({ name }) => capitalize(name)).join(", ") || "Unknown",
+          captureRate: speciesData.capture_rate ?? 0,
+          location: locationAreasData
+            .map(({ location_area: area }) => capitalize(area.name))
+            .join(", "),
+          varieties: speciesData.varieties.map(({ pokemon: variety }) => variety.name).join(", "),
+          japaneseName: speciesData.names.find((entry) => entry.language.name === "ja")?.name || "Unknown",
+          japaneseRomaji: speciesData.names.find((entry) => entry.language.name === "roomaji")?.name || "Unknown",
+          isMythical: speciesData.is_mythical,
+          isLegendary: speciesData.is_legendary,
+          isBaby: speciesData.is_baby,
+          evolutionRoutes: evolutionData ? collectEvolutionRoutes(evolutionData.chain) : [],
+        };
+
+        setDetailsById((previous) => ({ ...previous, [pokemon.id]: details }));
+        return details;
+      })().catch((error) => {
+        console.warn(`Failed to load details for ${pokemon.name}: ${error.message}`);
+        detailRequests.current.delete(pokemon.id);
+        return null;
+      });
+
+      detailRequests.current.set(pokemon.id, request);
+      request.then(() => {
+        setDetailsLoading((previous) => ({ ...previous, [pokemon.id]: false }));
+      }, () => {
+        setDetailsLoading((previous) => ({ ...previous, [pokemon.id]: false }));
+      });
+    }
+
+    return request;
+  }, [fetchJson, loadPokemonSummary, summaries]);
+
+  const loadPokemonMoves = useCallback((pokemon) => {
+    if (!pokemon?.id) return Promise.resolve([]);
+
+    let request = moveRequests.current.get(pokemon.id);
+    if (!request) {
+      setMovesLoading((previous) => ({ ...previous, [pokemon.id]: true }));
+      request = (async () => {
+        const summary = summaries[pokemon.id] || await loadPokemonSummary(pokemon);
+        if (!summary) return [];
+
+        const moves = await Promise.all(
+          summary.moveRefs.slice(0, INITIAL_MOVE_COUNT).map(async (move) => {
+            try {
+              const moveData = await fetchJson(move.url);
+              return {
+                ...move,
+                name: capitalize(move.name),
+                target: moveData.target.name,
+                power: moveData.power,
+                pp: moveData.pp,
+                accuracy: moveData.accuracy,
+              };
+            } catch {
+              return null;
+            }
+          })
+        );
+        const availableMoves = moves.filter(Boolean);
+        setMovesById((previous) => ({ ...previous, [pokemon.id]: availableMoves }));
+        return availableMoves;
+      })().catch((error) => {
+        console.warn(`Failed to load moves for ${pokemon.name}: ${error.message}`);
+        moveRequests.current.delete(pokemon.id);
+        return [];
+      });
+
+      moveRequests.current.set(pokemon.id, request);
+      request.then(() => {
+        setMovesLoading((previous) => ({ ...previous, [pokemon.id]: false }));
+      }, () => {
+        setMovesLoading((previous) => ({ ...previous, [pokemon.id]: false }));
+      });
+    }
+
+    return request;
+  }, [fetchJson, loadPokemonSummary, summaries]);
+
+  return {
+    fetchPokemons,
+    isLoading,
+    hasMorePokemons,
+    pokemonListError,
+    pokemons,
+    summaries,
+    summaryLoading,
+    summaryErrors,
+    detailsById,
+    detailsLoading,
+    movesById,
+    movesLoading,
+    loadPokemonSummary,
+    loadPokemonDetails,
+    loadPokemonMoves,
+  };
 };
