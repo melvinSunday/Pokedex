@@ -155,15 +155,13 @@ const MainPage = () => {
               <img src={featured.image} alt="" className="featured-stop__image" width="232" height="232" />
             ) : <span className="featured-stop__image-placeholder" aria-hidden="true" />}
             <span className="featured-stop__footer">
-              <span>
-                <span className="featured-stop__name">{featured?.name || "Pikachu"}</span>
-                <span className="featured-stop__type">
-                  <span className="featured-stop__type-dot" aria-hidden="true" />
-                  <span>Electric type</span>
-                  <span className="featured-stop__number">№ 025</span>
-                </span>
+              <span className="featured-stop__name">{featured?.name || "Pikachu"}</span>
+              <span className="featured-stop__type">
+                <span className="featured-stop__type-dot" aria-hidden="true" />
+                <span>Electric type</span>
+                <span className="featured-stop__number">№ 025</span>
               </span>
-              <span className="featured-stop__arrow"><HiOutlineChevronRight aria-hidden="true" /></span>
+              <span className="featured-stop__arrow" aria-hidden="true"><HiOutlineChevronRight /></span>
             </span>
           </button>
           <span className="welcome-panel__contour welcome-panel__contour--one" aria-hidden="true" />

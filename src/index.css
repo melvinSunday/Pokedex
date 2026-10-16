@@ -404,18 +404,17 @@ a {
 .featured-stop__footer {
   position: relative;
   z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.featured-stop__footer > span:first-child {
   display: grid;
-  gap: 5px;
+  grid-template-areas: "name arrow" "type arrow";
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 5px;
 }
 
 .featured-stop__name {
+  grid-area: name;
   color: #fbfbf3;
   font-family: var(--font-display);
   font-optical-sizing: auto;
@@ -426,6 +425,7 @@ a {
 }
 
 .featured-stop__type {
+  grid-area: type;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -448,6 +448,7 @@ a {
 }
 
 .featured-stop__arrow {
+  grid-area: arrow;
   display: grid;
   width: 34px;
   height: 34px;
@@ -2100,6 +2101,11 @@ a {
     grid-column: 1;
     grid-row: 2;
     align-self: end;
+    grid-template-areas: "name arrow" "type type";
+    grid-template-columns: max-content 29px;
+    justify-content: start;
+    align-items: start;
+    column-gap: 7px;
   }
 
   .featured-stop__name {
@@ -2109,6 +2115,7 @@ a {
   .featured-stop__arrow {
     width: 29px;
     height: 29px;
+    align-self: start;
     font-size: 14px;
   }
 
