@@ -2,10 +2,6 @@
 
 A responsive Pokémon field guide built with React, Vite, and Tailwind CSS. Browse type routes, search the National Pokédex, save field notes, and open detailed species entries. Live species data and artwork come from PokéAPI.
 
-<p align="center">
-  <img src="./src/assets/pokedex-preview.png" alt="Pokédex App Preview">
-</p>
-
 ## Features
 
 - Explore the catalog by name, National Pokédex number, or Pokémon type
